@@ -1,0 +1,4 @@
+# React Router v8 は Node > 22.22.0 を要求する。
+# グローバル設定が 22.12.0 のままだと `pnpm dev` / `pnpm typecheck` が起動時に弾かれる。
+[tools]
+node = "24"

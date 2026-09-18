@@ -1,13 +1,138 @@
-import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
+import { cn } from "~/lib/cn";
+import { paths } from "~/lib/paths";
+import { TOOL_THEME, type ToolId } from "~/lib/toolTheme";
+import { listSelfPromotions } from "~/mocks/selfPromotion";
+import type { SelfPromotionModel } from "~/types/selfPromotion";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "就活BOX ツールモック | fun-mock-box" },
+    {
+      name: "description",
+      content: "自己PR・志望動機・ES作成ツールのモック",
+    },
   ];
 }
 
+type ToolCard = {
+  id: ToolId;
+  name: string;
+  description: string;
+  to: string | null;
+};
+
+const TOOLS: ToolCard[] = [
+  {
+    id: "self-promotion",
+    name: "自己PR作成",
+    description: "4つの質問に答えるだけで自己PRが完成します",
+    to: paths.selfPromotionsNew,
+  },
+  {
+    id: "motivation",
+    name: "志望動機作成",
+    description: "業界・業種から志望動機を組み立てます",
+    to: null,
+  },
+  {
+    id: "entry-sheet",
+    name: "ES作成・添削",
+    description: "設問と企業名からESを作成・添削します",
+    to: null,
+  },
+];
+
 export default function Home() {
-  return <Welcome />;
+  const [saved, setSaved] = useState<SelfPromotionModel[]>([]);
+
+  // localStorage は SPA モードなのでマウント後に読む
+  useEffect(() => {
+    setSaved(listSelfPromotions());
+  }, []);
+
+  return (
+    <div className="min-h-dvh bg-gray-1">
+      <div className="mx-auto flex min-h-dvh w-full flex-col gap-xxl bg-white px-md py-xxl sm:w-tool sm:shadow-all-sides">
+        <header className="flex flex-col gap-xs">
+          <h1 className="text-xl font-bold leading-sm">就活BOX ツール</h1>
+          <p className="text-xs text-font-gray">
+            バックエンドなしで動くモックです
+          </p>
+        </header>
+
+        <section className="flex flex-col gap-sm">
+          {TOOLS.map((tool) => {
+            const theme = TOOL_THEME[tool.id];
+            const card = (
+              <div
+                className={cn(
+                  "flex flex-col gap-xxs rounded-lg border-2 p-md",
+                  tool.to
+                    ? cn(theme.border, "bg-white")
+                    : "border-border-2 bg-gray-1",
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={cn(
+                      "text-md font-bold",
+                      tool.to ? theme.text : "text-font-gray",
+                    )}
+                  >
+                    {tool.name}
+                  </span>
+                  {tool.to ? (
+                    <ChevronRight
+                      size={24}
+                      aria-hidden
+                      className="text-font-gray"
+                    />
+                  ) : (
+                    <span className="rounded-infinity bg-gray-3 px-xs py-3xs text-xxs text-font-gray">
+                      準備中
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs leading-md text-font-gray">
+                  {tool.description}
+                </p>
+              </div>
+            );
+
+            return tool.to ? (
+              <Link key={tool.id} to={tool.to} className="hover:opacity-60">
+                {card}
+              </Link>
+            ) : (
+              <div key={tool.id}>{card}</div>
+            );
+          })}
+        </section>
+
+        {saved.length > 0 && (
+          <section className="flex flex-col gap-sm">
+            <h2 className="text-md font-bold">作成した自己PR</h2>
+            <ul className="flex flex-col gap-xs">
+              {saved.map((item) => (
+                <li key={item.id}>
+                  <Link
+                    to={paths.selfPromotion(item.id)}
+                    className="flex flex-col gap-3xs rounded-md border border-border-2 p-sm hover:opacity-60"
+                  >
+                    <span className="text-sm font-bold">{item.title}</span>
+                    <span className="line-clamp-2 text-xs text-font-gray">
+                      {item.content}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
+    </div>
+  );
 }
