@@ -21,7 +21,14 @@ export default [
     ]),
   ]),
 
-  // 後続ツールはこのブロックを複製する:
-  // ...prefix("motivations", [...]),
+  ...prefix("motivations", [
+    layout("routes/motivation/layout.tsx", [
+      route("new", "routes/motivation/new-index.tsx"),
+      route("new/:step", "routes/motivation/new-step.tsx"),
+      route(":id", "routes/motivation/result.tsx"),
+    ]),
+  ]),
+
+  // ES はこのブロックを複製する:
   // ...prefix("entry-sheets", [...]),
 ] satisfies RouteConfig;

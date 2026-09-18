@@ -36,7 +36,7 @@ export const TOOL_THEME: Record<ToolId, ToolTheme> = {
     bg: "bg-primary-motivation",
     text: "text-primary-motivation",
     border: "border-primary-motivation",
-    bgSoft: "bg-gray-1",
+    bgSoft: "bg-motivation-90",
     hoverInvert:
       "hover:bg-white hover:border-primary-motivation hover:text-primary-motivation",
   },
@@ -44,7 +44,7 @@ export const TOOL_THEME: Record<ToolId, ToolTheme> = {
     bg: "bg-primary-entry-sheet",
     text: "text-primary-entry-sheet",
     border: "border-primary-entry-sheet",
-    bgSoft: "bg-gray-1",
+    bgSoft: "bg-entry-sheet-90",
     hoverInvert:
       "hover:bg-white hover:border-primary-entry-sheet hover:text-primary-entry-sheet",
   },

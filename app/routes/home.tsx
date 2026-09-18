@@ -4,8 +4,9 @@ import { Link } from "react-router";
 import { cn } from "~/lib/cn";
 import { paths } from "~/lib/paths";
 import { TOOL_THEME, type ToolId } from "~/lib/toolTheme";
+import { listMotivations } from "~/mocks/motivation";
 import { listSelfPromotions } from "~/mocks/selfPromotion";
-import type { SelfPromotionModel } from "~/types/selfPromotion";
+import type { ToolResultModel } from "~/mocks/store";
 
 export function meta() {
   return [
@@ -24,6 +25,13 @@ type ToolCard = {
   to: string | null;
 };
 
+/** 保存リストでどのツールの文章かを示すラベル */
+const TOOL_LABEL: Record<ToolId, string> = {
+  "self-promotion": "自己PR",
+  motivation: "志望動機",
+  "entry-sheet": "ES",
+};
+
 const TOOLS: ToolCard[] = [
   {
     id: "self-promotion",
@@ -35,7 +43,7 @@ const TOOLS: ToolCard[] = [
     id: "motivation",
     name: "志望動機作成",
     description: "業界・業種から志望動機を組み立てます",
-    to: null,
+    to: paths.motivationsNew,
   },
   {
     id: "entry-sheet",
@@ -45,12 +53,26 @@ const TOOLS: ToolCard[] = [
   },
 ];
 
+type SavedItem = ToolResultModel & { toolId: ToolId; href: string };
+
 export default function Home() {
-  const [saved, setSaved] = useState<SelfPromotionModel[]>([]);
+  const [saved, setSaved] = useState<SavedItem[]>([]);
 
   // localStorage は SPA モードなのでマウント後に読む
   useEffect(() => {
-    setSaved(listSelfPromotions());
+    const items: SavedItem[] = [
+      ...listSelfPromotions().map((item) => ({
+        ...item,
+        toolId: "self-promotion" as const,
+        href: paths.selfPromotion(item.id),
+      })),
+      ...listMotivations().map((item) => ({
+        ...item,
+        toolId: "motivation" as const,
+        href: paths.motivation(item.id),
+      })),
+    ].sort((a, b) => b.created_at.localeCompare(a.created_at));
+    setSaved(items);
   }, []);
 
   return (
@@ -114,14 +136,22 @@ export default function Home() {
 
         {saved.length > 0 && (
           <section className="flex flex-col gap-sm">
-            <h2 className="text-md font-bold">作成した自己PR</h2>
+            <h2 className="text-md font-bold">作成した文章</h2>
             <ul className="flex flex-col gap-xs">
               {saved.map((item) => (
                 <li key={item.id}>
                   <Link
-                    to={paths.selfPromotion(item.id)}
+                    to={item.href}
                     className="flex flex-col gap-3xs rounded-md border border-border-2 p-sm hover:opacity-60"
                   >
+                    <span
+                      className={cn(
+                        "text-xxs font-bold",
+                        TOOL_THEME[item.toolId].text,
+                      )}
+                    >
+                      {TOOL_LABEL[item.toolId]}
+                    </span>
                     <span className="text-sm font-bold">{item.title}</span>
                     <span className="line-clamp-2 text-xs text-font-gray">
                       {item.content}

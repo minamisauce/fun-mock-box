@@ -33,6 +33,12 @@
   --color-primary-motivation: #00bdc0; /* 志望動機 = ターコイズ */
   --color-primary-entry-sheet: #88c713; /* ES = イエローグリーン */
 
+  /* ツール色の淡色（選択中カードの背景など）。
+   * 志望動機は Design System の gradient-for-motivation-induction 由来、
+   * ES は gradient-for-entry-sheet-main-visual 由来。 */
+  --color-motivation-90: #ccf5f6;
+  --color-entry-sheet-90: #f3f9ec;
+
   /* purple スケール（5 が最濃 / 90 が最淡）。自己PRで使う範囲のみ移植 */
   --color-purple-5: #222563;
   --color-purple-10: #34368c;
