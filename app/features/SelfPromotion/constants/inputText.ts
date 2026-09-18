@@ -93,14 +93,6 @@ export const solution = [
   "言語交流の促進",
 ] as const;
 
-/** 入力フィールド名 → 候補ワード */
-export const Recommend = {
-  strength,
-  situation,
-  difficulty,
-  solution,
-} as const satisfies Record<string, readonly string[]>;
-
 /** Step1 の固定選択肢。「その他」を選ぶと strength-other へ分岐する */
 export const STRENGTH_OPTIONS = [
   "問題解決力",

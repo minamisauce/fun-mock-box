@@ -6,13 +6,14 @@ import {
   SelectStrengthOther,
 } from "~/features/SelfPromotion/components";
 import { StepIdEnum } from "~/features/SelfPromotion/constants/stepIds";
-import type { Steps } from "~/features/SelfPromotion/types";
+import type { Steps } from "~/features/ToolWizard/types";
+import type { CreateSelfPromotionRequest } from "~/types/selfPromotion";
 
 /**
  * ステップ定義。
  * 出典: shukatsu-box/frontend/app/src/features/SelfPromotion/constants/steps.ts
  */
-export const selfPromotionSteps: Steps = [
+export const selfPromotionSteps: Steps<CreateSelfPromotionRequest> = [
   // ネストした配列 = 同一階層の分岐ステップ
   [
     {

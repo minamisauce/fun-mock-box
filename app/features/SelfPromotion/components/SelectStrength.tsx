@@ -8,7 +8,7 @@ import {
 } from "~/features/SelfPromotion/constants/inputText";
 import { StepIdEnum } from "~/features/SelfPromotion/constants/stepIds";
 import { useSelfPromotionForm } from "~/features/SelfPromotion/hooks/useSelfPromotionForm";
-import type { StepComponentProps } from "~/features/SelfPromotion/types";
+import type { StepComponentProps } from "~/features/ToolWizard/types";
 import { paths } from "~/lib/paths";
 
 const OTHER_VALUE = "__other__";

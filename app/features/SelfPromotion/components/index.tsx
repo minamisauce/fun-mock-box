@@ -4,7 +4,7 @@ import {
   solution,
   strength,
 } from "~/features/SelfPromotion/constants/inputText";
-import type { StepComponentProps } from "~/features/SelfPromotion/types";
+import type { StepComponentProps } from "~/features/ToolWizard/types";
 import { TextInputStep } from "./TextInputStep";
 
 export { SelectStrength } from "./SelectStrength";

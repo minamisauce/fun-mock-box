@@ -13,6 +13,3 @@ export const StepIdEnum = {
 } as const;
 
 export type StepId = (typeof StepIdEnum)[keyof typeof StepIdEnum];
-
-/** ウィザードの基準パス */
-export const SELF_PROMOTION_BASE_PATH = "/self-promotions/new";

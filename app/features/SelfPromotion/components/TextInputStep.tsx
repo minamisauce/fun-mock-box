@@ -3,7 +3,7 @@ import { SuggestChips } from "~/components/SuggestChips";
 import { TextArea } from "~/components/TextArea";
 import { SuggestMaxCount } from "~/features/SelfPromotion/constants/inputText";
 import { useSelfPromotionForm } from "~/features/SelfPromotion/hooks/useSelfPromotionForm";
-import type { StepComponentProps } from "~/features/SelfPromotion/types";
+import type { StepComponentProps } from "~/features/ToolWizard/types";
 import type { CreateSelfPromotionRequest } from "~/types/selfPromotion";
 
 type Props = StepComponentProps & {

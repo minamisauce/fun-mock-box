@@ -86,7 +86,8 @@ localStorage / sessionStorage は `app/lib/storage.ts` のラッパ経由で触�
 |---|---|
 | `app/routes/` | ルートモジュールのみ。薄く保つ |
 | `app/components/<PascalCase>/index.tsx` | 3ツールで使い回す汎用UI |
-| `app/features/<PascalCase>/` | ツール固有の components / constants / hooks / types |
+| `app/features/ToolWizard/` | **3ツール共通**のウィザード機構（型 + `useStepNavigation`）。ツール固有の型を持ち込まない |
+| `app/features/<PascalCase>/` | ツール固有の components / constants / hooks |
 | `app/mocks/` | 擬似API。差し替え境界 |
 | `app/types/` | ドメイン型（本番 api-schema 相当） |
 | `app/lib/` | cn / paths / storage / toolTheme |

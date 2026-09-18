@@ -79,7 +79,3 @@ export function updateSelfPromotion(
   writeAll(items);
   return updated;
 }
-
-export function deleteSelfPromotion(id: string): void {
-  writeAll(readAll().filter((item) => item.id !== id));
-}

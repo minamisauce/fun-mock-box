@@ -4,10 +4,9 @@ import { useNavigate } from "react-router";
 import { GeneratingOverlay } from "~/components/GeneratingOverlay";
 import { ProgressBar } from "~/components/ProgressBar";
 import { ToolLayout } from "~/components/ToolLayout";
-import { SELF_PROMOTION_BASE_PATH } from "~/features/SelfPromotion/constants/stepIds";
 import { selfPromotionSteps } from "~/features/SelfPromotion/constants/steps";
 import { useSelfPromotionForm } from "~/features/SelfPromotion/hooks/useSelfPromotionForm";
-import { useStepNavigation } from "~/features/SelfPromotion/hooks/useStepNavigation";
+import { useStepNavigation } from "~/features/ToolWizard/useStepNavigation";
 import { paths } from "~/lib/paths";
 import { createSelfPromotion } from "~/mocks/selfPromotion";
 
@@ -27,7 +26,7 @@ export default function SelfPromotionNewStep() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { currentStep, currentStepObject, isLastStep, handleNextStep } =
-    useStepNavigation(selfPromotionSteps, SELF_PROMOTION_BASE_PATH);
+    useStepNavigation(selfPromotionSteps, paths.selfPromotionsNew);
 
   // 直リンク・ブラウザバック対策:
   // このステップに必要な入力が揃っていなければ先頭ステップへ戻す
