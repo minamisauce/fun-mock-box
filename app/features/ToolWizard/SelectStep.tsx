@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { SelectCard } from "~/components/SelectCard";
-import type { ToolTheme } from "~/lib/toolTheme";
+import type { ReactNode } from 'react';
+import { SelectCard } from '~/components/SelectCard';
+import type { ToolTheme } from '~/lib/toolTheme';
 
 type Option = {
   label: string;
@@ -28,8 +28,8 @@ export function SelectStep({
   theme,
 }: Props) {
   return (
-    <div className="flex flex-col gap-xl">
-      <h2 className="text-lg font-bold leading-md">{label}</h2>
+    <div className='flex flex-col gap-xl'>
+      <h2 className='text-lg font-bold leading-md'>{label}</h2>
       <SelectCard
         options={options}
         onSelect={onSelect}

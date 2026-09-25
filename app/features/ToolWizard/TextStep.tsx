@@ -1,7 +1,7 @@
-import { Button } from "~/components/Button";
-import { SuggestChips } from "~/components/SuggestChips";
-import { TextArea } from "~/components/TextArea";
-import type { ToolTheme } from "~/lib/toolTheme";
+import { Button } from '~/components/Button';
+import { SuggestChips } from '~/components/SuggestChips';
+import { TextArea } from '~/components/TextArea';
+import type { ToolTheme } from '~/lib/toolTheme';
 
 type Props = {
   label: string;
@@ -31,17 +31,17 @@ export function TextStep({
   suggestMaxCount = 6,
   maxLength = 100,
   onNext,
-  nextText = "次へ",
+  nextText = '次へ',
   isSubmitting = false,
   theme,
 }: Props) {
   const isEmpty = value.trim().length === 0;
 
   return (
-    <div className="flex flex-col gap-xl">
-      <h2 className="text-lg font-bold leading-md">{label}</h2>
+    <div className='flex flex-col gap-xl'>
+      <h2 className='text-lg font-bold leading-md'>{label}</h2>
 
-      <div className="flex flex-col gap-md">
+      <div className='flex flex-col gap-md'>
         <TextArea
           value={value}
           onChange={onChange}

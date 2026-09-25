@@ -9,12 +9,22 @@
 ## コマンド
 
 パッケージマネージャは **pnpm**。npm / yarn を使わない。
+Node は `.node-version`（24.15.0）に従う。React Router v8 は Node > 22.22.0 が必須。
 
 ```bash
-pnpm dev        # http://localhost:5173
-pnpm typecheck  # react-router typegen && tsc
+pnpm dev         # http://localhost:5173
 pnpm build
+
+# CI で検証している3つ（PR を出す前にこの3つを通す）
+pnpm format      # biome check（フォーマット + lint）
+pnpm typecheck   # react-router typegen && tsc
+pnpm test        # vitest run
+
+pnpm format:fix  # biome check --write（自動修正）
 ```
+
+CI は `.github/workflows/check.yml`。1つ落ちても残りを実行するので、
+PR 上で3つぶんの結果がまとめて見える。
 
 ## ハマりどころ（必読）
 
@@ -94,6 +104,23 @@ localStorage / sessionStorage は `app/lib/storage.ts` のラッパ経由で触�
 
 **共通コンポーネントにツール名をハードコードしない。** 色は props で渡す。
 これを守っている限り、志望動機・ES は `features/` の追加だけで載る。
+
+## コードスタイル / テスト
+
+Biome（`biome.jsonc`）に従う。shukatsu-box と同じ設定にしてあるので、
+両リポジトリ間でコードをそのまま行き来させられる。
+
+- **シングルクォート**（JSX も）、スペース2つ
+- import の自動整列、未使用 import はエラー
+- Tailwind クラスの並べ替え（`useSortedClasses`）は nursery のため一旦 off
+
+テストは Vitest（`vitest.config.ts`、jsdom 環境）。`app/**/*.test.ts` を拾う。
+現状カバーしているのは擬似APIの中核だけ:
+
+- `app/mocks/templates/*.test.ts` — 生成文の決定性・入力の反映・段落数・文字数上限
+- `app/mocks/store.test.ts` — localStorage ストアの CRUD と壊れたJSONの扱い
+
+UI のテストはまだ無い。追加するなら `@testing-library/react` を入れる。
 
 ## アイコン
 

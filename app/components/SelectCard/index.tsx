@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { cn } from "~/lib/cn";
-import { TOOL_THEME, type ToolTheme } from "~/lib/toolTheme";
+import type { ReactNode } from 'react';
+import { cn } from '~/lib/cn';
+import { TOOL_THEME, type ToolTheme } from '~/lib/toolTheme';
 
 /**
  * Design System: Components / glayButton (node 3047:7006)
@@ -31,14 +31,14 @@ export function SelectCard({
   value,
   onSelect,
   columns = 1,
-  theme = TOOL_THEME["self-promotion"],
+  theme = TOOL_THEME['self-promotion'],
   className,
 }: Props) {
   return (
     <div
       className={cn(
-        "grid gap-xs",
-        columns === 2 ? "grid-cols-2" : "grid-cols-1",
+        'grid gap-xs',
+        columns === 2 ? 'grid-cols-2' : 'grid-cols-1',
         className,
       )}
     >
@@ -47,14 +47,14 @@ export function SelectCard({
         return (
           <button
             key={option.value}
-            type="button"
+            type='button'
             onClick={() => onSelect(option.value)}
             aria-pressed={selected}
             className={cn(
-              "flex flex-col items-center justify-center gap-xs rounded-md border-b p-xxl text-center text-sm font-bold leading-md transition-colors",
+              'flex flex-col items-center justify-center gap-xs rounded-md border-b p-xxl text-center text-sm font-bold leading-md transition-colors',
               selected
                 ? cn(theme.border, theme.text, theme.bgSoft)
-                : "border-border-2 bg-gray-2 text-black hover:bg-gray-3",
+                : 'border-border-2 bg-gray-2 text-black hover:bg-gray-3',
             )}
           >
             {option.icon}

@@ -1,11 +1,11 @@
-import { STORAGE_KEYS } from "~/lib/storage";
-import { createMockStore, GENERATE_LATENCY_MS, sleep } from "~/mocks/store";
-import { generateMotivation } from "~/mocks/templates/motivation";
+import { STORAGE_KEYS } from '~/lib/storage';
+import { createMockStore, GENERATE_LATENCY_MS, sleep } from '~/mocks/store';
+import { generateMotivation } from '~/mocks/templates/motivation';
 import type {
   CreateMotivationRequest,
   MotivationModel,
   UpdateMotivationRequest,
-} from "~/types/motivation";
+} from '~/types/motivation';
 
 /**
  * 志望動機の擬似API。

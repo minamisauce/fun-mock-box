@@ -5,12 +5,12 @@ import {
   reason,
   SECTORS_BY_INDUSTRY,
   SuggestExperienceMaxCount,
-} from "~/features/Motivation/constants/inputText";
-import { useMotivationForm } from "~/features/Motivation/hooks/useMotivationForm";
-import { SelectStep } from "~/features/ToolWizard/SelectStep";
-import { TextStep } from "~/features/ToolWizard/TextStep";
-import type { StepComponentProps } from "~/features/ToolWizard/types";
-import { TOOL_THEME } from "~/lib/toolTheme";
+} from '~/features/Motivation/constants/inputText';
+import { useMotivationForm } from '~/features/Motivation/hooks/useMotivationForm';
+import { SelectStep } from '~/features/ToolWizard/SelectStep';
+import { TextStep } from '~/features/ToolWizard/TextStep';
+import type { StepComponentProps } from '~/features/ToolWizard/types';
+import { TOOL_THEME } from '~/lib/toolTheme';
 
 const theme = TOOL_THEME.motivation;
 
@@ -26,9 +26,9 @@ export function SelectIndustry({ label, handleNextStep }: StepComponentProps) {
   const handleSelect = (value: string) => {
     // 業界を変えたら業種は選び直しになるのでクリアする
     if (values.industry && values.industry !== value) {
-      setValue("sector", "");
+      setValue('sector', '');
     }
-    setValue("industry", value);
+    setValue('industry', value);
     handleNextStep();
   };
 
@@ -47,7 +47,7 @@ export function SelectSector({ label, handleNextStep }: StepComponentProps) {
   const sectors = SECTORS_BY_INDUSTRY[values.industry as Industry] ?? [];
 
   const handleSelect = (value: string) => {
-    setValue("sector", value);
+    setValue('sector', value);
     handleNextStep();
   };
 
@@ -65,7 +65,7 @@ export function SelectReason({ label, handleNextStep }: StepComponentProps) {
   const { setValue } = useMotivationForm();
 
   const handleSelect = (value: string) => {
-    setValue("reason", value);
+    setValue('reason', value);
     handleNextStep();
   };
 
@@ -90,13 +90,13 @@ export function SelectExperience({
   return (
     <TextStep
       label={label}
-      value={values.experience ?? ""}
-      onChange={(next) => setValue("experience", next)}
-      placeholder="例）リーグ優勝に導いた経験"
+      value={values.experience ?? ''}
+      onChange={(next) => setValue('experience', next)}
+      placeholder='例）リーグ優勝に導いた経験'
       candidates={experience}
       suggestMaxCount={SuggestExperienceMaxCount}
       onNext={handleNextStep}
-      nextText="志望動機を作成する"
+      nextText='志望動機を作成する'
       isSubmitting={isSubmitting}
       theme={theme}
     />

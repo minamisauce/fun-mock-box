@@ -42,7 +42,7 @@ export type AdjustSelfPromotionRequest = {
   /** 1..100 */
   text_length: number;
   /** です・ます調 / だ・である調 */
-  tone: "plain" | "polite";
-  composition_style: "concise" | "detailed";
+  tone: 'plain' | 'polite';
+  composition_style: 'concise' | 'detailed';
   strength?: string;
 };

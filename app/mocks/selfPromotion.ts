@@ -1,15 +1,11 @@
-import { STORAGE_KEYS } from "~/lib/storage";
-import {
-  createMockStore,
-  GENERATE_LATENCY_MS,
-  sleep,
-} from "~/mocks/store";
-import { generateSelfPromotion } from "~/mocks/templates/selfPromotion";
+import { STORAGE_KEYS } from '~/lib/storage';
+import { createMockStore, GENERATE_LATENCY_MS, sleep } from '~/mocks/store';
+import { generateSelfPromotion } from '~/mocks/templates/selfPromotion';
 import type {
   CreateSelfPromotionRequest,
   SelfPromotionModel,
   UpdateSelfPromotionRequest,
-} from "~/types/selfPromotion";
+} from '~/types/selfPromotion';
 
 /**
  * 自己PRの擬似API。

@@ -8,7 +8,7 @@
  *       さらに CREATE（作成）と REVIEW（添削）の2モードがある。
  */
 
-export type EntrySheetType = "CREATE" | "REVIEW";
+export type EntrySheetType = 'CREATE' | 'REVIEW';
 
 /** AI解説（作成時）: 良く書けている点の解説 */
 export type AiExplanationCreateV1 = Array<{
@@ -39,14 +39,14 @@ type EntrySheetBase = {
 };
 
 export type EntrySheetCreateModel = EntrySheetBase & {
-  type: "CREATE";
-  ai_explanation_schema_version: "CREATE_V1";
+  type: 'CREATE';
+  ai_explanation_schema_version: 'CREATE_V1';
   ai_explanation_json: AiExplanationCreateV1;
 };
 
 export type EntrySheetReviewModel = EntrySheetBase & {
-  type: "REVIEW";
-  ai_explanation_schema_version: "REVIEW_V1";
+  type: 'REVIEW';
+  ai_explanation_schema_version: 'REVIEW_V1';
   ai_explanation_json: AiExplanationReviewV1;
 };
 

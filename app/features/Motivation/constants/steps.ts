@@ -3,10 +3,10 @@ import {
   SelectIndustry,
   SelectReason,
   SelectSector,
-} from "~/features/Motivation/components";
-import { StepIdEnum } from "~/features/Motivation/constants/stepIds";
-import type { Steps } from "~/features/ToolWizard/types";
-import type { CreateMotivationRequest } from "~/types/motivation";
+} from '~/features/Motivation/components';
+import { StepIdEnum } from '~/features/Motivation/constants/stepIds';
+import type { Steps } from '~/features/ToolWizard/types';
+import type { CreateMotivationRequest } from '~/types/motivation';
 
 /**
  * ステップ定義。
@@ -18,25 +18,25 @@ export const motivationSteps: Steps<CreateMotivationRequest> = [
   {
     id: StepIdEnum.INDUSTRY,
     component: SelectIndustry,
-    label: "志望業界をお選びください",
+    label: '志望業界をお選びください',
     requiredParams: [],
   },
   {
     id: StepIdEnum.SECTOR,
     component: SelectSector,
-    label: "志望業種をお選びください",
-    requiredParams: ["industry"],
+    label: '志望業種をお選びください',
+    requiredParams: ['industry'],
   },
   {
     id: StepIdEnum.REASON,
     component: SelectReason,
-    label: "志望する企業の魅力的な部分は何ですか？",
-    requiredParams: ["industry", "sector"],
+    label: '志望する企業の魅力的な部分は何ですか？',
+    requiredParams: ['industry', 'sector'],
   },
   {
     id: StepIdEnum.EXPERIENCE,
     component: SelectExperience,
-    label: "どんな経験から志望企業で働きたいと思いましたか？",
-    requiredParams: ["industry", "sector", "reason"],
+    label: 'どんな経験から志望企業で働きたいと思いましたか？',
+    requiredParams: ['industry', 'sector', 'reason'],
   },
 ];

@@ -1,5 +1,5 @@
-import { Outlet } from "react-router";
-import { MotivationFormProvider } from "~/features/Motivation/hooks/useMotivationForm";
+import { Outlet } from 'react-router';
+import { MotivationFormProvider } from '~/features/Motivation/hooks/useMotivationForm';
 
 /**
  * 志望動機ツール配下の共通レイアウト。

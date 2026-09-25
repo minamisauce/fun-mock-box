@@ -1,25 +1,25 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { GeneratingOverlay } from "~/components/GeneratingOverlay";
-import { ToolLayout } from "~/components/ToolLayout";
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
+import { GeneratingOverlay } from '~/components/GeneratingOverlay';
+import { ToolLayout } from '~/components/ToolLayout';
 import {
   EntrySheetForm,
   type EntrySheetFormValues,
-} from "~/features/EntrySheet/components/EntrySheetForm";
-import { paths } from "~/lib/paths";
-import { TOOL_THEME } from "~/lib/toolTheme";
-import { reviewEntrySheet } from "~/mocks/entrySheet";
+} from '~/features/EntrySheet/components/EntrySheetForm';
+import { paths } from '~/lib/paths';
+import { TOOL_THEME } from '~/lib/toolTheme';
+import { reviewEntrySheet } from '~/mocks/entrySheet';
 
 const GENERATING_MESSAGES = [
-  "文章を読み込んでいます…",
-  "改善点を洗い出しています…",
-  "添削案を作成しています…",
+  '文章を読み込んでいます…',
+  '改善点を洗い出しています…',
+  '添削案を作成しています…',
 ] as const;
 
-const theme = TOOL_THEME["entry-sheet"];
+const theme = TOOL_THEME['entry-sheet'];
 
 export function meta() {
-  return [{ title: "ES添削 | fun-mock-box" }];
+  return [{ title: 'ES添削 | fun-mock-box' }];
 }
 
 export default function EntrySheetReview() {
@@ -43,9 +43,9 @@ export default function EntrySheetReview() {
 
   return (
     <>
-      <ToolLayout title="ES作成・添削" onBack={() => navigate(paths.home)}>
+      <ToolLayout title='ES作成・添削' onBack={() => navigate(paths.home)}>
         <EntrySheetForm
-          mode="REVIEW"
+          mode='REVIEW'
           isSubmitting={isSubmitting}
           onSubmit={handleSubmit}
         />

@@ -4,10 +4,10 @@ import {
   SelectSolution,
   SelectStrength,
   SelectStrengthOther,
-} from "~/features/SelfPromotion/components";
-import { StepIdEnum } from "~/features/SelfPromotion/constants/stepIds";
-import type { Steps } from "~/features/ToolWizard/types";
-import type { CreateSelfPromotionRequest } from "~/types/selfPromotion";
+} from '~/features/SelfPromotion/components';
+import { StepIdEnum } from '~/features/SelfPromotion/constants/stepIds';
+import type { Steps } from '~/features/ToolWizard/types';
+import type { CreateSelfPromotionRequest } from '~/types/selfPromotion';
 
 /**
  * ステップ定義。
@@ -19,32 +19,32 @@ export const selfPromotionSteps: Steps<CreateSelfPromotionRequest> = [
     {
       id: StepIdEnum.STRENGTH,
       component: SelectStrength,
-      label: "あなたの長所を教えてください",
+      label: 'あなたの長所を教えてください',
       requiredParams: [],
     },
     {
       id: StepIdEnum.STRENGTH_OTHER,
       component: SelectStrengthOther,
-      label: "あなたの長所を教えてください",
+      label: 'あなたの長所を教えてください',
       requiredParams: [],
     },
   ],
   {
     id: StepIdEnum.SITUATION,
     component: SelectSituation,
-    label: "どんなときに長所を発揮しましたか？",
-    requiredParams: ["strength"],
+    label: 'どんなときに長所を発揮しましたか？',
+    requiredParams: ['strength'],
   },
   {
     id: StepIdEnum.DIFFICULTY,
     component: SelectDifficulty,
-    label: "長所を発揮した経験で大変だったことは何ですか？",
-    requiredParams: ["strength", "situation"],
+    label: '長所を発揮した経験で大変だったことは何ですか？',
+    requiredParams: ['strength', 'situation'],
   },
   {
     id: StepIdEnum.SOLUTION,
     component: SelectSolution,
-    label: "大変だったことを解決するために何をしましたか？",
-    requiredParams: ["strength", "situation", "difficulty"],
+    label: '大変だったことを解決するために何をしましたか？',
+    requiredParams: ['strength', 'situation', 'difficulty'],
   },
 ];

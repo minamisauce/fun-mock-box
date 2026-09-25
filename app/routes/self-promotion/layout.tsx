@@ -1,5 +1,5 @@
-import { Outlet } from "react-router";
-import { SelfPromotionFormProvider } from "~/features/SelfPromotion/hooks/useSelfPromotionForm";
+import { Outlet } from 'react-router';
+import { SelfPromotionFormProvider } from '~/features/SelfPromotion/hooks/useSelfPromotionForm';
 
 /**
  * 自己PRツール配下の共通レイアウト。

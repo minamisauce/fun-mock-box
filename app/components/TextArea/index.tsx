@@ -1,6 +1,6 @@
-import { Check, Copy } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { cn } from "~/lib/cn";
+import { Check, Copy } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { cn } from '~/lib/cn';
 
 type Props = {
   value: string;
@@ -36,11 +36,13 @@ export function TextArea({
   const ref = useRef<HTMLTextAreaElement>(null);
   const [copied, setCopied] = useState(false);
 
-  // 入力量に応じて高さを追従させる
+  // 入力量に応じて高さを追従させる。
+  // value は本文を読むためではなく「測り直す契機」として依存に入れている。
+  // biome-ignore lint/correctness/useExhaustiveDependencies: value は再計算のトリガー
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    el.style.height = "auto";
+    el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
   }, [value]);
 
@@ -60,7 +62,7 @@ export function TextArea({
   };
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn('w-full', className)}>
       <textarea
         ref={ref}
         id={id}
@@ -76,43 +78,43 @@ export function TextArea({
         // Design System: input/textarea (node 3014:1452)
         // px-md py-sm / 角丸 8px / border-2 / 14px・行間1.5、focus で border を black に
         className={cn(
-          "w-full resize-none overflow-hidden rounded-md border bg-white px-md py-sm text-sm leading-md",
-          "placeholder:text-font-gray focus:outline-none",
+          'w-full resize-none overflow-hidden rounded-md border bg-white px-md py-sm text-sm leading-md',
+          'placeholder:text-font-gray focus:outline-none',
           errorMessage
-            ? "border-primary-red"
-            : "border-border-2 focus:border-black",
+            ? 'border-primary-red'
+            : 'border-border-2 focus:border-black',
         )}
       />
       {errorMessage && (
         <p
           id={id ? `${id}-error` : undefined}
-          className="mt-xxs text-xs text-primary-red"
+          className='mt-xxs text-xs text-primary-red'
         >
           {errorMessage}
         </p>
       )}
       {(showCount || showCopy) && (
-        <div className="mt-xxs flex items-center justify-between">
+        <div className='mt-xxs flex items-center justify-between'>
           {showCount ? (
-            <span className="text-xs text-font-gray">
+            <span className='text-xs text-font-gray'>
               {value.length}
-              {maxLength ? ` / ${maxLength}` : ""} 文字
+              {maxLength ? ` / ${maxLength}` : ''} 文字
             </span>
           ) : (
             <span />
           )}
           {showCopy && (
             <button
-              type="button"
+              type='button'
               onClick={handleCopy}
-              className="inline-flex items-center gap-xxs rounded-infinity border border-border-2 px-sm py-3xs text-xs text-black transition-colors hover:bg-gray-2"
+              className='inline-flex items-center gap-xxs rounded-infinity border border-border-2 px-sm py-3xs text-xs text-black transition-colors hover:bg-gray-2'
             >
               {copied ? (
                 <Check size={14} aria-hidden />
               ) : (
                 <Copy size={14} aria-hidden />
               )}
-              {copied ? "コピーしました" : "文章をコピー"}
+              {copied ? 'コピーしました' : '文章をコピー'}
             </button>
           )}
         </div>

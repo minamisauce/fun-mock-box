@@ -1,6 +1,6 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { cn } from "~/lib/cn";
-import { TOOL_THEME, type ToolTheme } from "~/lib/toolTheme";
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { cn } from '~/lib/cn';
+import { TOOL_THEME, type ToolTheme } from '~/lib/toolTheme';
 
 /**
  * Design System: Components / button (node 3047:6540)
@@ -12,8 +12,8 @@ import { TOOL_THEME, type ToolTheme } from "~/lib/toolTheme";
  * - disabled: bg gray-3 (#e9e9e9) + 文字 font-gray (#999)  ※透過ではない
  */
 
-type Variant = "primary" | "outline" | "text";
-type Size = "lg" | "md" | "sm";
+type Variant = 'primary' | 'outline' | 'text';
+type Size = 'lg' | 'md' | 'sm';
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   text: string;
@@ -31,16 +31,16 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const SIZE_CLASS: Record<Size, string> = {
-  lg: "p-md gap-none",
-  md: "px-md py-sm gap-none",
-  sm: "px-sm py-xs gap-xxs",
+  lg: 'p-md gap-none',
+  md: 'px-md py-sm gap-none',
+  sm: 'px-sm py-xs gap-xxs',
 };
 
 export function Button({
   text,
-  variant = "primary",
-  size = "lg",
-  theme = TOOL_THEME["self-promotion"],
+  variant = 'primary',
+  size = 'lg',
+  theme = TOOL_THEME['self-promotion'],
   beforeIcon,
   afterIcon,
   isPending = false,
@@ -53,20 +53,20 @@ export function Button({
 
   return (
     <button
-      type="button"
+      type='button'
       disabled={isDisabled}
       className={cn(
         // hover でボーダーが増えて 1px ずれないよう、常に透明ボーダーを敷いておく
-        "inline-flex items-center justify-center rounded-md border border-transparent text-sm font-bold leading-md transition-colors",
+        'inline-flex items-center justify-center rounded-md border border-transparent text-sm font-bold leading-md transition-colors',
         SIZE_CLASS[size],
-        fullWidth && "w-full",
+        fullWidth && 'w-full',
         isDisabled
-          ? "cursor-not-allowed bg-gray-3 text-font-gray"
-          : variant === "primary"
-            ? cn(theme.bg, "text-white", theme.hoverInvert)
-            : variant === "outline"
-              ? cn("bg-white", theme.border, theme.text)
-              : cn("bg-transparent", theme.text),
+          ? 'cursor-not-allowed bg-gray-3 text-font-gray'
+          : variant === 'primary'
+            ? cn(theme.bg, 'text-white', theme.hoverInvert)
+            : variant === 'outline'
+              ? cn('bg-white', theme.border, theme.text)
+              : cn('bg-transparent', theme.text),
         className,
       )}
       {...rest}
@@ -74,7 +74,7 @@ export function Button({
       {isPending ? (
         <span
           aria-hidden
-          className="size-5 animate-spin rounded-infinity border-2 border-font-gray border-t-transparent"
+          className='size-5 animate-spin rounded-infinity border-2 border-font-gray border-t-transparent'
         />
       ) : (
         beforeIcon

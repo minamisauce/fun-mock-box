@@ -1,17 +1,17 @@
-import { STORAGE_KEYS } from "~/lib/storage";
-import { createMockStore, GENERATE_LATENCY_MS, sleep } from "~/mocks/store";
+import { STORAGE_KEYS } from '~/lib/storage';
+import { createMockStore, GENERATE_LATENCY_MS, sleep } from '~/mocks/store';
 import {
   extractSample,
   generateEntrySheetCreate,
   generateEntrySheetReview,
-} from "~/mocks/templates/entrySheet";
+} from '~/mocks/templates/entrySheet';
 import type {
   CreateEntrySheetRequest,
   EntrySheetModel,
   ExtractedEntrySheet,
   ReviewEntrySheetRequest,
   UpdateEntrySheetRequest,
-} from "~/types/entrySheet";
+} from '~/types/entrySheet';
 
 /**
  * ESの擬似API。
@@ -34,11 +34,11 @@ export async function createEntrySheet(
   await sleep(GENERATE_LATENCY_MS);
   const { content, ai_explanation_json } = generateEntrySheetCreate(req);
   return store.insert({
-    type: "CREATE",
+    type: 'CREATE',
     question: req.question,
     company_name: req.company_name,
     content,
-    ai_explanation_schema_version: "CREATE_V1",
+    ai_explanation_schema_version: 'CREATE_V1',
     ai_explanation_json,
   });
 }
@@ -50,12 +50,12 @@ export async function reviewEntrySheet(
   await sleep(GENERATE_LATENCY_MS);
   const { content, ai_explanation_json } = generateEntrySheetReview(req);
   return store.insert({
-    type: "REVIEW",
+    type: 'REVIEW',
     question: req.question,
     company_name: req.company_name,
     content,
     original_content: req.original_content,
-    ai_explanation_schema_version: "REVIEW_V1",
+    ai_explanation_schema_version: 'REVIEW_V1',
     ai_explanation_json,
   });
 }

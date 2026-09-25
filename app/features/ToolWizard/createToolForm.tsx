@@ -6,8 +6,8 @@ import {
   useEffect,
   useMemo,
   useState,
-} from "react";
-import { readSession, removeSession, writeSession } from "~/lib/storage";
+} from 'react';
+import { readSession, removeSession, writeSession } from '~/lib/storage';
 
 /**
  * ステップをまたいで入力値を共有する Context を生成するファクトリ。
@@ -25,7 +25,9 @@ export type ToolFormValue<TForm> = {
   toRequest: () => TForm | null;
 };
 
-export function createToolForm<TForm extends Record<string, string | undefined>>({
+export function createToolForm<
+  TForm extends Record<string, string | undefined>,
+>({
   storageKey,
   requiredKeys,
   displayName,
@@ -57,7 +59,7 @@ export function createToolForm<TForm extends Record<string, string | undefined>>
     const toRequest = useCallback((): TForm | null => {
       if (requiredKeys.some((key) => !values[key]?.trim())) return null;
       return Object.fromEntries(
-        requiredKeys.map((key) => [key, values[key] ?? ""]),
+        requiredKeys.map((key) => [key, values[key] ?? '']),
       ) as TForm;
     }, [values]);
 

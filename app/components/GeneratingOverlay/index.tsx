@@ -1,7 +1,7 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { cn } from "~/lib/cn";
-import { TOOL_THEME, type ToolTheme } from "~/lib/toolTheme";
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { cn } from '~/lib/cn';
+import { TOOL_THEME, type ToolTheme } from '~/lib/toolTheme';
 
 type Props = {
   isOpen: boolean;
@@ -17,7 +17,7 @@ export function GeneratingOverlay({
   isOpen,
   messages,
   intervalMs = 1000,
-  theme = TOOL_THEME["self-promotion"],
+  theme = TOOL_THEME['self-promotion'],
 }: Props) {
   const [index, setIndex] = useState(0);
 
@@ -40,22 +40,22 @@ export function GeneratingOverlay({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-lg bg-white/95"
+          className='fixed inset-0 z-50 flex flex-col items-center justify-center gap-lg bg-white/95'
         >
           <span
             className={cn(
-              "size-12 animate-spin rounded-infinity border-4 border-t-transparent",
+              'size-12 animate-spin rounded-infinity border-4 border-t-transparent',
               theme.border,
             )}
           />
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode='wait'>
             <motion.p
               key={index}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.2 }}
-              className="text-md font-bold text-black"
+              className='text-md font-bold text-black'
             >
               {messages[index]}
             </motion.p>

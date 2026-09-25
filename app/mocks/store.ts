@@ -1,4 +1,4 @@
-import { readLocal, writeLocal } from "~/lib/storage";
+import { readLocal, writeLocal } from '~/lib/storage';
 
 /** 保存される全モデルの共通フィールド */
 export type StoredEntity = {

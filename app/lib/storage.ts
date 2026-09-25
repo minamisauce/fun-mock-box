@@ -5,11 +5,11 @@
  */
 
 export const STORAGE_KEYS = {
-  selfPromotions: "fun-mock-box:self-promotions",
-  selfPromotionDraft: "fun-mock-box:self-promotion:draft",
-  motivations: "fun-mock-box:motivations",
-  motivationDraft: "fun-mock-box:motivation:draft",
-  entrySheets: "fun-mock-box:entry-sheets",
+  selfPromotions: 'fun-mock-box:self-promotions',
+  selfPromotionDraft: 'fun-mock-box:self-promotion:draft',
+  motivations: 'fun-mock-box:motivations',
+  motivationDraft: 'fun-mock-box:motivation:draft',
+  entrySheets: 'fun-mock-box:entry-sheets',
 } as const;
 
 function safeParse<T>(raw: string | null, fallback: T): T {
@@ -22,7 +22,7 @@ function safeParse<T>(raw: string | null, fallback: T): T {
 }
 
 export function readLocal<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
+  if (typeof window === 'undefined') return fallback;
   try {
     return safeParse(window.localStorage.getItem(key), fallback);
   } catch {
@@ -31,7 +31,7 @@ export function readLocal<T>(key: string, fallback: T): T {
 }
 
 export function writeLocal(key: string, value: unknown): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
   } catch {
@@ -40,7 +40,7 @@ export function writeLocal(key: string, value: unknown): void {
 }
 
 export function readSession<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
+  if (typeof window === 'undefined') return fallback;
   try {
     return safeParse(window.sessionStorage.getItem(key), fallback);
   } catch {
@@ -49,7 +49,7 @@ export function readSession<T>(key: string, fallback: T): T {
 }
 
 export function writeSession(key: string, value: unknown): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   try {
     window.sessionStorage.setItem(key, JSON.stringify(value));
   } catch {
@@ -58,7 +58,7 @@ export function writeSession(key: string, value: unknown): void {
 }
 
 export function removeSession(key: string): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   try {
     window.sessionStorage.removeItem(key);
   } catch {

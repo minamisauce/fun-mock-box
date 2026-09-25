@@ -5,11 +5,11 @@
  * ID だけをこのモジュールに分離している。
  */
 export const StepIdEnum = {
-  STRENGTH: "strength",
-  STRENGTH_OTHER: "strength-other",
-  SITUATION: "situation",
-  DIFFICULTY: "difficulty",
-  SOLUTION: "solution",
+  STRENGTH: 'strength',
+  STRENGTH_OTHER: 'strength-other',
+  SITUATION: 'situation',
+  DIFFICULTY: 'difficulty',
+  SOLUTION: 'solution',
 } as const;
 
 export type StepId = (typeof StepIdEnum)[keyof typeof StepIdEnum];

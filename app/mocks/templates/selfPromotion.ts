@@ -1,4 +1,4 @@
-import type { CreateSelfPromotionRequest } from "~/types/selfPromotion";
+import type { CreateSelfPromotionRequest } from '~/types/selfPromotion';
 
 /**
  * 擬似「AI生成」。入力値を差し込んだテンプレート文を組み立てる。
@@ -83,7 +83,7 @@ export function generateSelfPromotion(req: Req): GeneratedSelfPromotion {
     pick(EPISODE_PATTERNS, seed, 2)(req),
     pick(CHALLENGE_PATTERNS, seed, 3)(req),
     pick(CLOSING_PATTERNS, seed, 4)(req),
-  ].join("\n\n");
+  ].join('\n\n');
 
   return {
     // 本番のタイトル上限に合わせて 40 文字で切る

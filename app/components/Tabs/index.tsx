@@ -1,4 +1,4 @@
-import { cn } from "~/lib/cn";
+import { cn } from '~/lib/cn';
 
 /**
  * Design System: Components / navigation/tab (node 3019:2138)
@@ -33,21 +33,24 @@ export function Tabs<T extends string>({
 }: Props<T>) {
   return (
     <div
-      role="tablist"
-      className={cn("flex w-full items-center rounded-lg bg-gray-2 p-1", className)}
+      role='tablist'
+      className={cn(
+        'flex w-full items-center rounded-lg bg-gray-2 p-1',
+        className,
+      )}
     >
       {options.map((option) => {
         const selected = option.value === value;
         return (
           <button
             key={option.value}
-            type="button"
-            role="tab"
+            type='button'
+            role='tab'
             aria-selected={selected}
             onClick={() => onChange(option.value)}
             className={cn(
-              "min-w-px flex-1 rounded-md p-xs text-center text-sm font-bold leading-none transition-colors",
-              selected ? "bg-white text-black shadow-tab" : "text-black",
+              'min-w-px flex-1 rounded-md p-xs text-center text-sm font-bold leading-none transition-colors',
+              selected ? 'bg-white text-black shadow-tab' : 'text-black',
             )}
           >
             {option.label}

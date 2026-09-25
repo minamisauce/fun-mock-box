@@ -1,23 +1,23 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { GeneratingOverlay } from "~/components/GeneratingOverlay";
-import { ProgressBar } from "~/components/ProgressBar";
-import { ToolLayout } from "~/components/ToolLayout";
-import { selfPromotionSteps } from "~/features/SelfPromotion/constants/steps";
-import { useSelfPromotionForm } from "~/features/SelfPromotion/hooks/useSelfPromotionForm";
-import { useStepNavigation } from "~/features/ToolWizard/useStepNavigation";
-import { paths } from "~/lib/paths";
-import { createSelfPromotion } from "~/mocks/selfPromotion";
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { GeneratingOverlay } from '~/components/GeneratingOverlay';
+import { ProgressBar } from '~/components/ProgressBar';
+import { ToolLayout } from '~/components/ToolLayout';
+import { selfPromotionSteps } from '~/features/SelfPromotion/constants/steps';
+import { useSelfPromotionForm } from '~/features/SelfPromotion/hooks/useSelfPromotionForm';
+import { useStepNavigation } from '~/features/ToolWizard/useStepNavigation';
+import { paths } from '~/lib/paths';
+import { createSelfPromotion } from '~/mocks/selfPromotion';
 
 const GENERATING_MESSAGES = [
-  "回答を分析しています…",
-  "構成を組み立てています…",
-  "文章を作成しています…",
+  '回答を分析しています…',
+  '構成を組み立てています…',
+  '文章を作成しています…',
 ] as const;
 
 export function meta() {
-  return [{ title: "自己PR作成 | fun-mock-box" }];
+  return [{ title: '自己PR作成 | fun-mock-box' }];
 }
 
 export default function SelfPromotionNewStep() {
@@ -71,7 +71,7 @@ export default function SelfPromotionNewStep() {
   return (
     <>
       <ToolLayout
-        title="自己PR作成"
+        title='自己PR作成'
         onBack={() => navigate(-1)}
         headerSlot={
           <ProgressBar
@@ -80,7 +80,7 @@ export default function SelfPromotionNewStep() {
           />
         }
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode='wait'>
           <motion.div
             key={currentStepObject.id}
             initial={{ opacity: 0, x: 16 }}
@@ -97,10 +97,7 @@ export default function SelfPromotionNewStep() {
         </AnimatePresence>
       </ToolLayout>
 
-      <GeneratingOverlay
-        isOpen={isSubmitting}
-        messages={GENERATING_MESSAGES}
-      />
+      <GeneratingOverlay isOpen={isSubmitting} messages={GENERATING_MESSAGES} />
     </>
   );
 }

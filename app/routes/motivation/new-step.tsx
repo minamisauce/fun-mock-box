@@ -1,26 +1,26 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { GeneratingOverlay } from "~/components/GeneratingOverlay";
-import { ProgressBar } from "~/components/ProgressBar";
-import { ToolLayout } from "~/components/ToolLayout";
-import { motivationSteps } from "~/features/Motivation/constants/steps";
-import { useMotivationForm } from "~/features/Motivation/hooks/useMotivationForm";
-import { useStepNavigation } from "~/features/ToolWizard/useStepNavigation";
-import { paths } from "~/lib/paths";
-import { TOOL_THEME } from "~/lib/toolTheme";
-import { createMotivation } from "~/mocks/motivation";
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { GeneratingOverlay } from '~/components/GeneratingOverlay';
+import { ProgressBar } from '~/components/ProgressBar';
+import { ToolLayout } from '~/components/ToolLayout';
+import { motivationSteps } from '~/features/Motivation/constants/steps';
+import { useMotivationForm } from '~/features/Motivation/hooks/useMotivationForm';
+import { useStepNavigation } from '~/features/ToolWizard/useStepNavigation';
+import { paths } from '~/lib/paths';
+import { TOOL_THEME } from '~/lib/toolTheme';
+import { createMotivation } from '~/mocks/motivation';
 
 const GENERATING_MESSAGES = [
-  "回答を分析しています…",
-  "構成を組み立てています…",
-  "文章を作成しています…",
+  '回答を分析しています…',
+  '構成を組み立てています…',
+  '文章を作成しています…',
 ] as const;
 
 const theme = TOOL_THEME.motivation;
 
 export function meta() {
-  return [{ title: "志望動機作成 | fun-mock-box" }];
+  return [{ title: '志望動機作成 | fun-mock-box' }];
 }
 
 export default function MotivationNewStep() {
@@ -74,7 +74,7 @@ export default function MotivationNewStep() {
   return (
     <>
       <ToolLayout
-        title="志望動機作成"
+        title='志望動機作成'
         onBack={() => navigate(-1)}
         headerSlot={
           <ProgressBar
@@ -84,7 +84,7 @@ export default function MotivationNewStep() {
           />
         }
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode='wait'>
           <motion.div
             key={currentStepObject.id}
             initial={{ opacity: 0, x: 16 }}

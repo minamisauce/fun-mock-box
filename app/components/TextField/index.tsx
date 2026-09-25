@@ -1,4 +1,4 @@
-import { cn } from "~/lib/cn";
+import { cn } from '~/lib/cn';
 
 /**
  * Design System: Components / input/textField (node 3014:1434)
@@ -31,9 +31,9 @@ export function TextField({
   className,
 }: Props) {
   return (
-    <div className={cn("flex w-full flex-col gap-xxs", className)}>
+    <div className={cn('flex w-full flex-col gap-xxs', className)}>
       <input
-        type="text"
+        type='text'
         id={id}
         aria-invalid={errorMessage ? true : undefined}
         aria-describedby={errorMessage && id ? `${id}-error` : undefined}
@@ -42,20 +42,23 @@ export function TextField({
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          "w-full rounded-md border bg-white px-md py-sm text-sm leading-md",
-          "placeholder:text-font-gray focus:outline-none",
+          'w-full rounded-md border bg-white px-md py-sm text-sm leading-md',
+          'placeholder:text-font-gray focus:outline-none',
           errorMessage
-            ? "border-primary-red"
-            : "border-border-2 focus:border-black",
+            ? 'border-primary-red'
+            : 'border-border-2 focus:border-black',
         )}
       />
       {errorMessage && (
-        <span id={id ? `${id}-error` : undefined} className="text-xs text-primary-red">
+        <span
+          id={id ? `${id}-error` : undefined}
+          className='text-xs text-primary-red'
+        >
           {errorMessage}
         </span>
       )}
       {maxLength && !errorMessage && (
-        <span className="text-xs text-font-gray">
+        <span className='text-xs text-font-gray'>
           {value.length} / {maxLength} 文字
         </span>
       )}

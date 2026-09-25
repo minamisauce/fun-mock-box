@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router";
-import type { Step, Steps } from "~/features/ToolWizard/types";
+import { useCallback, useEffect, useMemo } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
+import type { Step, Steps } from '~/features/ToolWizard/types';
 
 function findStepById<TForm>(
   steps: Steps<TForm>,

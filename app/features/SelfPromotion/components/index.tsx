@@ -1,26 +1,26 @@
-import { ArrowLeftRight, Dumbbell, Smile, UsersRound } from "lucide-react";
-import type { ReactNode } from "react";
-import { useNavigate } from "react-router";
+import { ArrowLeftRight, Dumbbell, Smile, UsersRound } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useNavigate } from 'react-router';
 import {
   difficulty,
-  situation,
-  solution,
-  strength,
   STRENGTH_OPTIONS,
   STRENGTH_OTHER_LABEL,
   SuggestMaxCount,
-} from "~/features/SelfPromotion/constants/inputText";
-import { StepIdEnum } from "~/features/SelfPromotion/constants/stepIds";
-import { useSelfPromotionForm } from "~/features/SelfPromotion/hooks/useSelfPromotionForm";
-import { SelectStep } from "~/features/ToolWizard/SelectStep";
-import { TextStep } from "~/features/ToolWizard/TextStep";
-import type { StepComponentProps } from "~/features/ToolWizard/types";
-import { paths } from "~/lib/paths";
-import { TOOL_THEME } from "~/lib/toolTheme";
-import type { CreateSelfPromotionRequest } from "~/types/selfPromotion";
+  situation,
+  solution,
+  strength,
+} from '~/features/SelfPromotion/constants/inputText';
+import { StepIdEnum } from '~/features/SelfPromotion/constants/stepIds';
+import { useSelfPromotionForm } from '~/features/SelfPromotion/hooks/useSelfPromotionForm';
+import { SelectStep } from '~/features/ToolWizard/SelectStep';
+import { TextStep } from '~/features/ToolWizard/TextStep';
+import type { StepComponentProps } from '~/features/ToolWizard/types';
+import { paths } from '~/lib/paths';
+import { TOOL_THEME } from '~/lib/toolTheme';
+import type { CreateSelfPromotionRequest } from '~/types/selfPromotion';
 
-const theme = TOOL_THEME["self-promotion"];
-const OTHER_VALUE = "__other__";
+const theme = TOOL_THEME['self-promotion'];
+const OTHER_VALUE = '__other__';
 
 /**
  * Design System の glayButton はアイコン 24px を持つ。
@@ -55,11 +55,11 @@ export function SelectStrength({ label, handleNextStep }: StepComponentProps) {
       // strength-other は strength と同じ階層の分岐ステップなので
       // handleNextStep では到達できない。直接遷移させる。
       // ブラウザバックで戻ったとき固定4択の値が残っていることがあるためクリアする。
-      setValue("strength", "");
+      setValue('strength', '');
       navigate(paths.selfPromotionsNewStep(StepIdEnum.STRENGTH_OTHER));
       return;
     }
-    setValue("strength", value);
+    setValue('strength', value);
     handleNextStep();
   };
 
@@ -89,7 +89,7 @@ function createTextStep(
     return (
       <TextStep
         label={label}
-        value={values[name] ?? ""}
+        value={values[name] ?? ''}
         onChange={(next) => setValue(name, next)}
         placeholder={placeholder}
         candidates={candidates}
@@ -104,23 +104,23 @@ function createTextStep(
 }
 
 export const SelectStrengthOther = createTextStep(
-  "strength",
-  "例）情報収集能力",
+  'strength',
+  '例）情報収集能力',
   strength,
 );
 export const SelectSituation = createTextStep(
-  "situation",
-  "例）音楽バンドの活動",
+  'situation',
+  '例）音楽バンドの活動',
   situation,
 );
 export const SelectDifficulty = createTextStep(
-  "difficulty",
-  "例）メンバーとの意見の違い",
+  'difficulty',
+  '例）メンバーとの意見の違い',
   difficulty,
 );
 export const SelectSolution = createTextStep(
-  "solution",
-  "例）部員同士の話し合い",
+  'solution',
+  '例）部員同士の話し合い',
   solution,
-  "自己PRを作成する",
+  '自己PRを作成する',
 );

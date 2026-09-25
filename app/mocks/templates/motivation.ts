@@ -1,4 +1,4 @@
-import type { CreateMotivationRequest } from "~/types/motivation";
+import type { CreateMotivationRequest } from '~/types/motivation';
 
 /**
  * 擬似「AI生成」。入力値を差し込んだテンプレート文を組み立てる。
@@ -72,9 +72,12 @@ const FUTURE_PATTERNS: ReadonlyArray<(r: Req) => string> = [
 ];
 
 const CLOSING_PATTERNS: ReadonlyArray<(r: Req) => string> = [
-  () => `未熟な点も多くありますが、学ぶ姿勢を怠らず、貴社の一員として着実に成長していきたいと考えております。`,
-  (r) => `${r.industry}業界で長く貢献できるよう、謙虚に学び続ける姿勢を大切にしてまいります。`,
-  () => `まだ学ぶべきことは多いと自覚しておりますが、誠実に業務と向き合い、信頼を積み重ねていきたいと考えております。`,
+  () =>
+    `未熟な点も多くありますが、学ぶ姿勢を怠らず、貴社の一員として着実に成長していきたいと考えております。`,
+  (r) =>
+    `${r.industry}業界で長く貢献できるよう、謙虚に学び続ける姿勢を大切にしてまいります。`,
+  () =>
+    `まだ学ぶべきことは多いと自覚しておりますが、誠実に業務と向き合い、信頼を積み重ねていきたいと考えております。`,
 ];
 
 export type GeneratedMotivation = {
@@ -93,7 +96,7 @@ export function generateMotivation(req: Req): GeneratedMotivation {
     pick(EXPERIENCE_PATTERNS, seed, 3)(req),
     pick(FUTURE_PATTERNS, seed, 4)(req),
     pick(CLOSING_PATTERNS, seed, 5)(req),
-  ].join("\n\n");
+  ].join('\n\n');
 
   return {
     // 本番のタイトル上限に合わせて 40 文字で切る

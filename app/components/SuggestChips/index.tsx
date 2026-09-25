@@ -1,6 +1,6 @@
-import { RefreshCw } from "lucide-react";
-import { useCallback, useState } from "react";
-import { cn } from "~/lib/cn";
+import { RefreshCw } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { cn } from '~/lib/cn';
 
 type Props = {
   /** 候補ワードの母集団 */
@@ -35,30 +35,30 @@ export function SuggestChips({
   }, [candidates, maxCount]);
 
   return (
-    <div className={cn("flex flex-col gap-xs", className)}>
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-font-gray">記入候補</span>
+    <div className={cn('flex flex-col gap-xs', className)}>
+      <div className='flex items-center justify-between'>
+        <span className='text-xs text-font-gray'>記入候補</span>
         <button
-          type="button"
+          type='button'
           onClick={shuffle}
           // textarea の blur によるレイアウトシフトで click が不発になるのを防ぐ
           onMouseDown={(e) => e.preventDefault()}
-          className="inline-flex items-center gap-3xs text-xs text-light-blue hover:opacity-60"
+          className='inline-flex items-center gap-3xs text-xs text-light-blue hover:opacity-60'
         >
           <RefreshCw size={12} aria-hidden />
           他のワード
         </button>
       </div>
-      <div className="flex flex-wrap gap-xs">
+      <div className='flex flex-wrap gap-xs'>
         {words.map((word) => (
           <button
             key={word}
-            type="button"
+            type='button'
             onClick={() => onPick(word)}
             onMouseDown={(e) => e.preventDefault()}
             // Design System: display/tag (node 3024:1564)
             // default = 白地 + border-2 + 12px font-gray、押下で selected = gray-2 + black
-            className="rounded-infinity border border-border-2 px-md py-sm text-xs text-font-gray transition-colors hover:bg-gray-2 hover:text-black"
+            className='rounded-infinity border border-border-2 px-md py-sm text-xs text-font-gray transition-colors hover:bg-gray-2 hover:text-black'
           >
             {word}
           </button>

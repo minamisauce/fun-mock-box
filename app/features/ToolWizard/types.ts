@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType } from 'react';
 
 /**
  * 3ツール（自己PR / 志望動機 / ES）共通のウィザード型。

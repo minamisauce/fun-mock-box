@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ENTRY_SHEETS_IMAGE_ERRORS,
   ENTRY_SHEETS_MAX_IMAGE_SIZE,
-} from "~/features/EntrySheet/constants";
-import { extractEntrySheetFromImage } from "~/mocks/entrySheet";
-import type { ExtractedEntrySheet } from "~/types/entrySheet";
+} from '~/features/EntrySheet/constants';
+import { extractEntrySheetFromImage } from '~/mocks/entrySheet';
+import type { ExtractedEntrySheet } from '~/types/entrySheet';
 
 /**
  * 画像を選んでテキストを抽出するまでの状態をまとめて扱う。
@@ -31,10 +31,10 @@ export function useImageUpload({
     };
   }, [preview]);
 
-  const clearInputs = () => {
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    if (cameraInputRef.current) cameraInputRef.current.value = "";
-  };
+  const clearInputs = useCallback(() => {
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
+  }, []);
 
   const removeImage = useCallback(() => {
     setPreview((current) => {
@@ -45,7 +45,7 @@ export function useImageUpload({
     setError(null);
     setIsExtracting(false);
     clearInputs();
-  }, []);
+  }, [clearInputs]);
 
   const selectFile = () => {
     setError(null);
@@ -61,7 +61,7 @@ export function useImageUpload({
     async (file: File) => {
       setError(null);
 
-      if (!file.type.startsWith("image/")) {
+      if (!file.type.startsWith('image/')) {
         setError(ENTRY_SHEETS_IMAGE_ERRORS.notImage);
         clearInputs();
         return;
@@ -89,7 +89,7 @@ export function useImageUpload({
         setIsExtracting(false);
       }
     },
-    [onExtracted],
+    [onExtracted, clearInputs],
   );
 
   return {

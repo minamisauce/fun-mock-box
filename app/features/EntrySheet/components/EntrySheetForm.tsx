@@ -1,12 +1,11 @@
-import { ImageUp, Sparkles } from "lucide-react";
-import { useCallback, useState } from "react";
-import { useNavigate } from "react-router";
-import { Button } from "~/components/Button";
-import { Tabs } from "~/components/Tabs";
-import { TextArea } from "~/components/TextArea";
-import { TextField } from "~/components/TextField";
-import { ImageFields } from "~/features/EntrySheet/components/ImageFields";
-import { useImageUpload } from "~/features/EntrySheet/hooks/useImageUpload";
+import { ImageUp, Sparkles } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { Button } from '~/components/Button';
+import { Tabs } from '~/components/Tabs';
+import { TextArea } from '~/components/TextArea';
+import { TextField } from '~/components/TextField';
+import { ImageFields } from '~/features/EntrySheet/components/ImageFields';
 import {
   ENTRY_SHEETS_CHARACTER_LIMIT_OPTIONS,
   ENTRY_SHEETS_COMPANY_NAME_MAX_LENGTH,
@@ -16,20 +15,18 @@ import {
   ENTRY_SHEETS_ORIGINAL_CONTENT_MAX_LENGTH,
   ENTRY_SHEETS_QUESTION_MAX_LENGTH,
   ENTRY_SHEETS_QUESTION_OPTIONS,
-} from "~/features/EntrySheet/constants";
-import { cn } from "~/lib/cn";
-import { paths } from "~/lib/paths";
-import { TOOL_THEME } from "~/lib/toolTheme";
-import type {
-  EntrySheetType,
-  ExtractedEntrySheet,
-} from "~/types/entrySheet";
+} from '~/features/EntrySheet/constants';
+import { useImageUpload } from '~/features/EntrySheet/hooks/useImageUpload';
+import { cn } from '~/lib/cn';
+import { paths } from '~/lib/paths';
+import { TOOL_THEME } from '~/lib/toolTheme';
+import type { EntrySheetType, ExtractedEntrySheet } from '~/types/entrySheet';
 
-const theme = TOOL_THEME["entry-sheet"];
+const theme = TOOL_THEME['entry-sheet'];
 
 const MODE_OPTIONS = [
-  { label: "AIで作成", value: "CREATE" as const },
-  { label: "AIで添削", value: "REVIEW" as const },
+  { label: 'AIで作成', value: 'CREATE' as const },
+  { label: 'AIで添削', value: 'REVIEW' as const },
 ];
 
 /**
@@ -67,14 +64,14 @@ function OptionChips({
   onPick: (value: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-xs">
+    <div className='flex flex-wrap gap-xs'>
       {options.map((option) => (
         <button
           key={option}
-          type="button"
+          type='button'
           onClick={() => onPick(option)}
           onMouseDown={(e) => e.preventDefault()}
-          className="rounded-infinity border border-border-2 px-md py-sm text-xs text-font-gray transition-colors hover:bg-gray-2 hover:text-black"
+          className='rounded-infinity border border-border-2 px-md py-sm text-xs text-font-gray transition-colors hover:bg-gray-2 hover:text-black'
         >
           {option}
         </button>
@@ -88,7 +85,7 @@ function AutoFilledBadge() {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-3xs rounded-infinity px-xs py-3xs text-xxs",
+        'inline-flex items-center gap-3xs rounded-infinity px-xs py-3xs text-xxs',
         theme.bgSoft,
         theme.text,
       )}
@@ -108,10 +105,10 @@ function FieldLabel({
   autoFilled?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-xxs">
-        <span className="text-sm font-bold leading-md">{label}</span>
-        <span className="text-sm text-primary-red">*</span>
+    <div className='flex items-center justify-between'>
+      <div className='flex items-center gap-xxs'>
+        <span className='text-sm font-bold leading-md'>{label}</span>
+        <span className='text-sm text-primary-red'>*</span>
       </div>
       {autoFilled && <AutoFilledBadge />}
     </div>
@@ -122,18 +119,18 @@ function FieldLabel({
 function ImageImportToggle({ onOpen }: { onOpen: () => void }) {
   return (
     <button
-      type="button"
+      type='button'
       onClick={onOpen}
       className={cn(
-        "flex w-full flex-col items-center gap-3xs rounded-md border-2 border-dashed border-border-1 p-md",
-        "transition-colors hover:bg-gray-1",
+        'flex w-full flex-col items-center gap-3xs rounded-md border-2 border-dashed border-border-1 p-md',
+        'transition-colors hover:bg-gray-1',
       )}
     >
-      <span className="flex items-center gap-xs text-sm font-bold leading-md text-black">
+      <span className='flex items-center gap-xs text-sm font-bold leading-md text-black'>
         <ImageUp size={20} aria-hidden className={theme.text} />
         ESの画像から一括入力
       </span>
-      <span className="text-xs leading-md text-font-gray">
+      <span className='text-xs leading-md text-font-gray'>
         設問・企業名・本文をまとめて読み取ります
       </span>
     </button>
@@ -141,11 +138,11 @@ function ImageImportToggle({ onOpen }: { onOpen: () => void }) {
 }
 
 type ErrorKey =
-  | "question"
-  | "company_name"
-  | "episode"
-  | "original_content"
-  | "agreed";
+  | 'question'
+  | 'company_name'
+  | 'episode'
+  | 'original_content'
+  | 'agreed';
 
 type FieldErrors = Partial<Record<ErrorKey, string>>;
 
@@ -160,21 +157,21 @@ function scrollToFirstError(errors: FieldErrors, order: ErrorKey[]) {
   if (!firstKey) return;
   const el = document.getElementById(`es-${firstKey}`);
   if (!el) return;
-  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   // スクロール中にフォーカスすると位置が飛ぶので少し待つ
   window.setTimeout(() => el.focus({ preventScroll: true }), 300);
 }
 
 export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
   const navigate = useNavigate();
-  const isCreate = mode === "CREATE";
+  const isCreate = mode === 'CREATE';
 
   const [values, setValues] = useState<EntrySheetFormValues>({
-    question: "",
-    company_name: "",
-    episode: "",
-    character_limit: "",
-    original_content: "",
+    question: '',
+    company_name: '',
+    episode: '',
+    character_limit: '',
+    original_content: '',
   });
   const [agreed, setAgreed] = useState(false);
   const [isImageOpen, setIsImageOpen] = useState(false);
@@ -196,7 +193,7 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
   };
 
   // 本文は、作成なら episode / 添削なら original_content に入れる
-  const mainField = isCreate ? "episode" : "original_content";
+  const mainField = isCreate ? 'episode' : 'original_content';
 
   const handleExtracted = useCallback(
     (result: ExtractedEntrySheet) => {
@@ -222,9 +219,9 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
   const image = useImageUpload({ onExtracted: handleExtracted });
 
   const FIELD_LABELS: Partial<Record<keyof EntrySheetFormValues, string>> = {
-    question: "設問",
-    company_name: "企業名",
-    [mainField]: isCreate ? "エピソード" : "ESの本文",
+    question: '設問',
+    company_name: '企業名',
+    [mainField]: isCreate ? 'エピソード' : 'ESの本文',
   };
   const readFields = Object.entries(autoFilled)
     .filter(([, on]) => on)
@@ -254,27 +251,27 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
   const mainText = isCreate ? values.episode : values.original_content;
 
   const errorOrder: ErrorKey[] = [
-    "question",
-    "company_name",
+    'question',
+    'company_name',
     mainField,
-    "agreed",
+    'agreed',
   ];
 
   const handleSubmit = () => {
     const next: FieldErrors = {};
-    if (values.question.trim() === "") {
-      next.question = "設問を入力してください";
+    if (values.question.trim() === '') {
+      next.question = '設問を入力してください';
     }
-    if (values.company_name.trim() === "") {
-      next.company_name = "企業名を入力してください";
+    if (values.company_name.trim() === '') {
+      next.company_name = '企業名を入力してください';
     }
-    if (mainText.trim() === "") {
+    if (mainText.trim() === '') {
       next[mainField] = isCreate
-        ? "エピソードを入力してください"
-        : "添削したいESを入力してください";
+        ? 'エピソードを入力してください'
+        : '添削したいESを入力してください';
     }
     if (!agreed) {
-      next.agreed = "注意事項への同意が必要です";
+      next.agreed = '注意事項への同意が必要です';
     }
 
     setErrors(next);
@@ -286,21 +283,23 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-xl">
+    <div className='flex flex-col gap-xl'>
       <Tabs
         options={MODE_OPTIONS}
         value={mode}
         onChange={(next) =>
           navigate(
-            next === "CREATE" ? paths.entrySheetsNew : paths.entrySheetsReviewNew,
+            next === 'CREATE'
+              ? paths.entrySheetsNew
+              : paths.entrySheetsReviewNew,
           )
         }
       />
 
-      <p className="text-xs leading-md text-font-gray">
+      <p className='text-xs leading-md text-font-gray'>
         {isCreate
-          ? "設問とエピソードを入力すると、AIがESの文章を作成します。"
-          : "書いたESを貼り付けると、AIが改善点を添削します。"}
+          ? '設問とエピソードを入力すると、AIがESの文章を作成します。'
+          : '書いたESを貼り付けると、AIが改善点を添削します。'}
       </p>
 
       {isImageOpen ? (
@@ -309,58 +308,58 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
         <ImageImportToggle onOpen={() => setIsImageOpen(true)} />
       )}
 
-      <div className="flex flex-col gap-lg">
-        <div className="flex flex-col gap-xs">
-          <FieldLabel label="設問" autoFilled={autoFilled.question} />
+      <div className='flex flex-col gap-lg'>
+        <div className='flex flex-col gap-xs'>
+          <FieldLabel label='設問' autoFilled={autoFilled.question} />
           <TextField
-            id="es-question"
+            id='es-question'
             value={values.question}
-            onChange={(v) => set("question", v)}
-            placeholder="例）自己PRを教えてください"
+            onChange={(v) => set('question', v)}
+            placeholder='例）自己PRを教えてください'
             maxLength={ENTRY_SHEETS_QUESTION_MAX_LENGTH}
             errorMessage={errors.question}
           />
           <OptionChips
             options={ENTRY_SHEETS_QUESTION_OPTIONS}
-            onPick={(v) => set("question", v)}
+            onPick={(v) => set('question', v)}
           />
         </div>
 
-        <div className="flex flex-col gap-xs">
-          <FieldLabel label="企業名" autoFilled={autoFilled.company_name} />
+        <div className='flex flex-col gap-xs'>
+          <FieldLabel label='企業名' autoFilled={autoFilled.company_name} />
           <TextField
-            id="es-company_name"
+            id='es-company_name'
             value={values.company_name}
-            onChange={(v) => set("company_name", v)}
-            placeholder="例）株式会社サンプル"
+            onChange={(v) => set('company_name', v)}
+            placeholder='例）株式会社サンプル'
             maxLength={ENTRY_SHEETS_COMPANY_NAME_MAX_LENGTH}
             errorMessage={errors.company_name}
           />
           <OptionChips
             options={ENTRY_SHEETS_COMPANY_NAME_SUGGESTIONS}
-            onPick={(v) => set("company_name", v)}
+            onPick={(v) => set('company_name', v)}
           />
         </div>
 
         {isCreate ? (
           <>
-            <div className="flex flex-col gap-xs">
-              <span className="text-sm font-bold leading-md">文字数の目安</span>
-              <div className="flex gap-xs">
+            <div className='flex flex-col gap-xs'>
+              <span className='text-sm font-bold leading-md'>文字数の目安</span>
+              <div className='flex gap-xs'>
                 {ENTRY_SHEETS_CHARACTER_LIMIT_OPTIONS.map((limit) => {
                   const selected = values.character_limit === limit;
                   return (
                     <button
                       key={limit}
-                      type="button"
+                      type='button'
                       onClick={() =>
-                        set("character_limit", selected ? "" : limit)
+                        set('character_limit', selected ? '' : limit)
                       }
                       className={cn(
-                        "flex-1 rounded-md border px-sm py-xs text-sm leading-md transition-colors",
+                        'flex-1 rounded-md border px-sm py-xs text-sm leading-md transition-colors',
                         selected
                           ? cn(theme.border, theme.text, theme.bgSoft)
-                          : "border-border-2 bg-white text-black hover:bg-gray-2",
+                          : 'border-border-2 bg-white text-black hover:bg-gray-2',
                       )}
                     >
                       {limit}字
@@ -370,13 +369,13 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-xs">
-              <FieldLabel label="エピソード" autoFilled={autoFilled.episode} />
+            <div className='flex flex-col gap-xs'>
+              <FieldLabel label='エピソード' autoFilled={autoFilled.episode} />
               <TextArea
-                id="es-episode"
+                id='es-episode'
                 value={values.episode}
-                onChange={(v) => set("episode", v)}
-                placeholder="例）大学時代のアルバイトでリーダーを務めた経験"
+                onChange={(v) => set('episode', v)}
+                placeholder='例）大学時代のアルバイトでリーダーを務めた経験'
                 maxLength={ENTRY_SHEETS_EPISODE_MAX_LENGTH}
                 showCount
                 minRows={6}
@@ -385,16 +384,16 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
             </div>
           </>
         ) : (
-          <div className="flex flex-col gap-xs">
+          <div className='flex flex-col gap-xs'>
             <FieldLabel
-              label="添削したいES"
+              label='添削したいES'
               autoFilled={autoFilled.original_content}
             />
             <TextArea
-              id="es-original_content"
+              id='es-original_content'
               value={values.original_content}
-              onChange={(v) => set("original_content", v)}
-              placeholder="書いたESを貼り付けてください"
+              onChange={(v) => set('original_content', v)}
+              placeholder='書いたESを貼り付けてください'
               maxLength={ENTRY_SHEETS_ORIGINAL_CONTENT_MAX_LENGTH}
               showCount
               minRows={10}
@@ -406,43 +405,41 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
 
       <div
         className={cn(
-          "flex flex-col gap-sm rounded-md p-md",
-          errors.agreed
-            ? "border border-primary-red bg-white"
-            : "bg-gray-2",
+          'flex flex-col gap-sm rounded-md p-md',
+          errors.agreed ? 'border border-primary-red bg-white' : 'bg-gray-2',
         )}
       >
-        <ul className="flex flex-col gap-xxs">
+        <ul className='flex flex-col gap-xxs'>
           {ENTRY_SHEETS_NOTICES.map((notice) => (
-            <li key={notice} className="text-xs leading-md text-black">
+            <li key={notice} className='text-xs leading-md text-black'>
               ・{notice}
             </li>
           ))}
         </ul>
-        <label className="flex items-center gap-xs text-sm leading-md">
+        <label className='flex items-center gap-xs text-sm leading-md'>
           <input
-            id="es-agreed"
-            type="checkbox"
+            id='es-agreed'
+            type='checkbox'
             checked={agreed}
             aria-invalid={errors.agreed ? true : undefined}
-            aria-describedby={errors.agreed ? "es-agreed-error" : undefined}
+            aria-describedby={errors.agreed ? 'es-agreed-error' : undefined}
             onChange={(e) => {
               setAgreed(e.target.checked);
               setErrors((prev) => ({ ...prev, agreed: undefined }));
             }}
-            className="size-4 accent-primary-entry-sheet"
+            className='size-4 accent-primary-entry-sheet'
           />
           下記の内容に同意する
         </label>
         {errors.agreed && (
-          <p id="es-agreed-error" className="text-xs text-primary-red">
+          <p id='es-agreed-error' className='text-xs text-primary-red'>
             {errors.agreed}
           </p>
         )}
       </div>
 
       <Button
-        text={isCreate ? "ESを作成する" : "ESを添削する"}
+        text={isCreate ? 'ESを作成する' : 'ESを添削する'}
         theme={theme}
         onClick={handleSubmit}
         disabled={image.isExtracting}

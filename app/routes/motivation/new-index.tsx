@@ -1,6 +1,6 @@
-import { redirect } from "react-router";
-import { StepIdEnum } from "~/features/Motivation/constants/stepIds";
-import { paths } from "~/lib/paths";
+import { redirect } from 'react-router';
+import { StepIdEnum } from '~/features/Motivation/constants/stepIds';
+import { paths } from '~/lib/paths';
 
 /** /motivations/new は先頭ステップへ送るだけ */
 export function clientLoader() {
