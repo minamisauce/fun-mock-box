@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockStore, type ToolResultModel } from '~/mocks/store';
+import { createLocalStore, type ToolResultModel } from '~/data/local/store';
 
 const KEY = 'test:items';
 
 function makeStore() {
-  return createMockStore<ToolResultModel>(KEY);
+  return createLocalStore<ToolResultModel>(KEY);
 }
 
-describe('createMockStore', () => {
+describe('createLocalStore', () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -61,8 +61,8 @@ describe('createMockStore', () => {
   });
 
   it('ツールごとにキーが分かれていれば干渉しない', () => {
-    const a = createMockStore<ToolResultModel>('test:a');
-    const b = createMockStore<ToolResultModel>('test:b');
+    const a = createLocalStore<ToolResultModel>('test:a');
+    const b = createLocalStore<ToolResultModel>('test:b');
     a.insert({ title: 'A', content: 'a' });
 
     expect(a.list()).toHaveLength(1);

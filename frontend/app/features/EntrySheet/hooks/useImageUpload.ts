@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { dataClient } from '~/data';
+import { reportError } from '~/data/errors';
 import {
   ENTRY_SHEETS_IMAGE_ERRORS,
   ENTRY_SHEETS_MAX_IMAGE_SIZE,
 } from '~/features/EntrySheet/constants';
-import { extractEntrySheetFromImage } from '~/mocks/entrySheet';
 import type { ExtractedEntrySheet } from '~/types/entrySheet';
 
 /**
@@ -80,10 +81,12 @@ export function useImageUpload({
       setIsExtracting(true);
 
       try {
-        const result = await extractEntrySheetFromImage(file);
+        const result = await dataClient.entrySheets.extractFromImage(file);
         onExtracted(result);
       } catch (e) {
-        console.error(e);
+        reportError(e);
+        // サーバーの汎用文言より「別の画像をお試しください」の方が
+        // 次の行動が分かるので、ここは固定文言のままにする
         setError(ENTRY_SHEETS_IMAGE_ERRORS.extractFailed);
       } finally {
         setIsExtracting(false);

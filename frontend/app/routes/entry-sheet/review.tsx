@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { ErrorNotice } from '~/components/ErrorNotice';
 import { GeneratingOverlay } from '~/components/GeneratingOverlay';
 import { ToolLayout } from '~/components/ToolLayout';
+import { dataClient } from '~/data';
 import {
   EntrySheetForm,
   type EntrySheetFormValues,
 } from '~/features/EntrySheet/components/EntrySheetForm';
+import { useAsyncAction } from '~/hooks/useAsyncAction';
+import { GENERATING_MIN_DURATION_MS, withMinimumDuration } from '~/lib/delay';
 import { paths } from '~/lib/paths';
 import { TOOL_THEME } from '~/lib/toolTheme';
-import { reviewEntrySheet } from '~/mocks/entrySheet';
+import type { ReviewEntrySheetRequest } from '~/types/entrySheet';
 
 const GENERATING_MESSAGES = [
   '文章を読み込んでいます…',
@@ -24,26 +28,36 @@ export function meta() {
 
 export default function EntrySheetReview() {
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // 添削成功後、結果画面へ移り終えるまでオーバーレイを出したままにする
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  const review = useAsyncAction((request: ReviewEntrySheetRequest) =>
+    withMinimumDuration(
+      dataClient.entrySheets.review(request),
+      GENERATING_MIN_DURATION_MS,
+    ),
+  );
+  const isSubmitting = review.isPending || isLeaving;
 
   const handleSubmit = async (values: EntrySheetFormValues) => {
-    setIsSubmitting(true);
-    try {
-      const created = await reviewEntrySheet({
-        question: values.question,
-        company_name: values.company_name,
-        original_content: values.original_content,
-      });
-      navigate(paths.entrySheet(created.id), { replace: true });
-    } catch (error) {
-      console.error(error);
-      setIsSubmitting(false);
-    }
+    const created = await review.run({
+      question: values.question,
+      company_name: values.company_name,
+      original_content: values.original_content,
+    });
+    // 失敗時は review.error に載っている。入力はそのまま残す
+    if (!created) return;
+
+    setIsLeaving(true);
+    navigate(paths.entrySheet(created.id), { replace: true });
   };
 
   return (
     <>
       <ToolLayout title='ES作成・添削' onBack={() => navigate(paths.home)}>
+        {review.error && (
+          <ErrorNotice message={review.error.userMessage} className='mb-md' />
+        )}
         <EntrySheetForm
           mode='REVIEW'
           isSubmitting={isSubmitting}

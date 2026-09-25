@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { ErrorNotice } from '~/components/ErrorNotice';
 import { GeneratingOverlay } from '~/components/GeneratingOverlay';
 import { ToolLayout } from '~/components/ToolLayout';
+import { dataClient } from '~/data';
 import {
   EntrySheetForm,
   type EntrySheetFormValues,
 } from '~/features/EntrySheet/components/EntrySheetForm';
+import { useAsyncAction } from '~/hooks/useAsyncAction';
+import { GENERATING_MIN_DURATION_MS, withMinimumDuration } from '~/lib/delay';
 import { paths } from '~/lib/paths';
 import { TOOL_THEME } from '~/lib/toolTheme';
-import { createEntrySheet } from '~/mocks/entrySheet';
+import type { CreateEntrySheetRequest } from '~/types/entrySheet';
 
 const GENERATING_MESSAGES = [
   '設問とエピソードを読み取っています…',
@@ -24,29 +28,39 @@ export function meta() {
 
 export default function EntrySheetCreate() {
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // 生成成功後、結果画面へ移り終えるまでオーバーレイを出したままにする
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  const create = useAsyncAction((request: CreateEntrySheetRequest) =>
+    withMinimumDuration(
+      dataClient.entrySheets.create(request),
+      GENERATING_MIN_DURATION_MS,
+    ),
+  );
+  const isSubmitting = create.isPending || isLeaving;
 
   const handleSubmit = async (values: EntrySheetFormValues) => {
-    setIsSubmitting(true);
-    try {
-      const created = await createEntrySheet({
-        question: values.question,
-        company_name: values.company_name,
-        episode: values.episode,
-        character_limit: values.character_limit
-          ? Number(values.character_limit)
-          : undefined,
-      });
-      navigate(paths.entrySheet(created.id), { replace: true });
-    } catch (error) {
-      console.error(error);
-      setIsSubmitting(false);
-    }
+    const created = await create.run({
+      question: values.question,
+      company_name: values.company_name,
+      episode: values.episode,
+      character_limit: values.character_limit
+        ? Number(values.character_limit)
+        : undefined,
+    });
+    // 失敗時は create.error に載っている。入力はそのまま残す
+    if (!created) return;
+
+    setIsLeaving(true);
+    navigate(paths.entrySheet(created.id), { replace: true });
   };
 
   return (
     <>
       <ToolLayout title='ES作成・添削' onBack={() => navigate(paths.home)}>
+        {create.error && (
+          <ErrorNotice message={create.error.userMessage} className='mb-md' />
+        )}
         <EntrySheetForm
           mode='CREATE'
           isSubmitting={isSubmitting}

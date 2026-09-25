@@ -6,7 +6,9 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["app/**/*.ts", "app/**/*.tsx", "*.ts", "*.jsonc"]
+    // ルートの1本で3パッケージすべてを見る。
+    // node_modules / build / .react-router は vcs.useIgnoreFile で外れる
+    "includes": ["**/*.ts", "**/*.tsx", "**/*.jsonc"]
   },
   "formatter": {
     "enabled": true,

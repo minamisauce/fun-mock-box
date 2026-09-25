@@ -1,3 +1,4 @@
+import { DataError } from '~/data/errors';
 import { readLocal, writeLocal } from '~/lib/storage';
 
 /** 保存される全モデルの共通フィールド */
@@ -16,8 +17,11 @@ export type ToolResultModel = StoredEntity & {
 /**
  * localStorage を裏に持つコレクションストア。
  * ツールごとにキーと型を変えて呼ぶだけで使い回せる。
+ *
+ * インメモリの状態を持たず毎回 localStorage を読むので、
+ * 同じキーで複数生成しても不整合は起きない。
  */
-export function createMockStore<T extends StoredEntity>(storageKey: string) {
+export function createLocalStore<T extends StoredEntity>(storageKey: string) {
   const readAll = (): T[] => readLocal<T[]>(storageKey, []);
   const writeAll = (items: T[]): void => writeLocal(storageKey, items);
 
@@ -49,7 +53,10 @@ export function createMockStore<T extends StoredEntity>(storageKey: string) {
       const items = readAll();
       const index = items.findIndex((item) => item.id === id);
       if (index === -1) {
-        throw new Error(`${storageKey}: not found (${id})`);
+        // HTTP 実装の 404 と同じ形に揃える（contract.ts の規約）
+        throw new DataError('not_found', {
+          message: `${storageKey}: not found (${id})`,
+        });
       }
       const updated: T = {
         ...items[index],
@@ -61,11 +68,4 @@ export function createMockStore<T extends StoredEntity>(storageKey: string) {
       return updated;
     },
   };
-}
-
-/** 生成中ローディングを見せるための擬似遅延 */
-export const GENERATE_LATENCY_MS = 2500;
-
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

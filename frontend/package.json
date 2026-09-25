@@ -1,0 +1,37 @@
+{
+  "name": "@fun/frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "test": "vitest run",
+    "typecheck": "react-router typegen && tsc"
+  },
+  "dependencies": {
+    "@react-router/node": "^8.4.0",
+    "@react-router/serve": "^8.4.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^13.4.0",
+    "isbot": "^5.1.36",
+    "lucide-react": "^1.47.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router": "^8.4.0",
+    "tailwind-merge": "^3.7.0"
+  },
+  "devDependencies": {
+    "@react-router/dev": "^8.4.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "catalog:",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "jsdom": "^30.1.1",
+    "tailwindcss": "^4.2.2",
+    "typescript": "catalog:",
+    "vite": "^8.0.3",
+    "vitest": "catalog:"
+  }
+}

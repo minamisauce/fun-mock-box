@@ -1,13 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Button } from '~/components/Button';
+import { ErrorNotice } from '~/components/ErrorNotice';
 import { Tabs } from '~/components/Tabs';
 import { TextArea } from '~/components/TextArea';
 import { ToolLayout } from '~/components/ToolLayout';
+import { dataClient } from '~/data';
+import { useAsyncAction } from '~/hooks/useAsyncAction';
+import { useAsyncData } from '~/hooks/useAsyncData';
 import { paths } from '~/lib/paths';
 import { TOOL_THEME } from '~/lib/toolTheme';
-import { getEntrySheet, updateEntrySheet } from '~/mocks/entrySheet';
-import type { EntrySheetModel } from '~/types/entrySheet';
+import type {
+  EntrySheetModel,
+  UpdateEntrySheetRequest,
+} from '~/types/entrySheet';
 
 const theme = TOOL_THEME['entry-sheet'];
 
@@ -76,33 +82,40 @@ export default function EntrySheetResult() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [item, setItem] = useState<EntrySheetModel | null>(null);
-  const [notFound, setNotFound] = useState(false);
-  const [content, setContent] = useState('');
-  const [tab, setTab] = useState<Tab>('content');
-  const [saved, setSaved] = useState(false);
+  const { data, error, isLoading, refetch } = useAsyncData(
+    (signal) =>
+      id ? dataClient.entrySheets.get(id, signal) : Promise.resolve(null),
+    [id],
+  );
 
-  // localStorage は SPA モードなのでマウント後に読む
-  useEffect(() => {
-    if (!id) return;
-    const found = getEntrySheet(id);
-    if (!found) {
-      setNotFound(true);
-      return;
-    }
-    setItem(found);
-    setContent(found.content);
-  }, [id]);
+  if (isLoading) {
+    return (
+      <ToolLayout title='作成したES'>
+        <div className='flex flex-col gap-md'>
+          <div className='h-6 w-2/3 animate-pulse rounded-sm bg-gray-2' />
+          <div className='h-40 w-full animate-pulse rounded-md bg-gray-2' />
+        </div>
+      </ToolLayout>
+    );
+  }
 
-  const isDirty = item !== null && content !== item.content;
+  if (error) {
+    return (
+      <ToolLayout title='作成したES' onBack={() => navigate(paths.home)}>
+        <div className='flex flex-col gap-lg py-xl'>
+          <ErrorNotice message={error.userMessage} onRetry={refetch} />
+          <Button
+            text='トップへ戻る'
+            variant='outline'
+            theme={theme}
+            onClick={() => navigate(paths.home)}
+          />
+        </div>
+      </ToolLayout>
+    );
+  }
 
-  const handleSave = () => {
-    if (!id || !isDirty) return;
-    setItem(updateEntrySheet(id, { content }));
-    setSaved(true);
-  };
-
-  if (notFound) {
+  if (!data) {
     return (
       <ToolLayout title='作成したES' onBack={() => navigate(paths.home)}>
         <div className='flex flex-col items-center gap-lg py-3xl'>
@@ -120,16 +133,34 @@ export default function EntrySheetResult() {
     );
   }
 
-  if (!item) {
-    return (
-      <ToolLayout title='作成したES'>
-        <div className='flex flex-col gap-md'>
-          <div className='h-6 w-2/3 animate-pulse rounded-sm bg-gray-2' />
-          <div className='h-40 w-full animate-pulse rounded-md bg-gray-2' />
-        </div>
-      </ToolLayout>
-    );
-  }
+  // key で作り直す。編集中の state を取得結果に同期させる effect が要らなくなり、
+  // id が変わったときに前のESの入力が残らない
+  return <EntrySheetEditor key={data.id} item={data} />;
+}
+
+function EntrySheetEditor({ item }: { item: EntrySheetModel }) {
+  const navigate = useNavigate();
+
+  // 保存済みの本文。編集中かどうかの判定はこれと比べる
+  const [saved, setSaved] = useState(item.content);
+  const [content, setContent] = useState(item.content);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>('content');
+
+  const save = useAsyncAction((patch: UpdateEntrySheetRequest) =>
+    dataClient.entrySheets.update(item.id, patch),
+  );
+
+  const isDirty = content !== saved;
+
+  const handleSave = async () => {
+    if (!isDirty) return;
+    const updated = await save.run({ content });
+    // 失敗しても入力は消さない。save.error に文言が載る
+    if (!updated) return;
+    setSaved(updated.content);
+    setSavedAt(updated.updated_at);
+  };
 
   const isReview = item.type === 'REVIEW';
 
@@ -165,7 +196,10 @@ export default function EntrySheetResult() {
               </span>
               <TextArea
                 value={content}
-                onChange={setContent}
+                onChange={(value) => {
+                  setContent(value);
+                  save.clearError();
+                }}
                 minRows={12}
                 showCount
                 showCopy
@@ -178,6 +212,7 @@ export default function EntrySheetResult() {
                 theme={theme}
                 onClick={handleSave}
                 disabled={!isDirty}
+                isPending={save.isPending}
               />
               <Button
                 text='もう一度作成する'
@@ -193,7 +228,9 @@ export default function EntrySheetResult() {
               />
             </div>
 
-            {saved && !isDirty && (
+            {save.error && <ErrorNotice message={save.error.userMessage} />}
+
+            {savedAt && !isDirty && (
               <p className='text-center text-xs text-font-gray'>保存しました</p>
             )}
           </div>

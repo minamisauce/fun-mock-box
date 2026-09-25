@@ -1,12 +1,14 @@
 import { ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { ErrorNotice } from '~/components/ErrorNotice';
+import { dataClient } from '~/data';
+import { useAsyncData } from '~/hooks/useAsyncData';
 import { cn } from '~/lib/cn';
 import { paths } from '~/lib/paths';
 import { TOOL_THEME, type ToolId } from '~/lib/toolTheme';
-import { listEntrySheets } from '~/mocks/entrySheet';
-import { listMotivations } from '~/mocks/motivation';
-import { listSelfPromotions } from '~/mocks/selfPromotion';
+import type { EntrySheetModel } from '~/types/entrySheet';
+import type { MotivationModel } from '~/types/motivation';
+import type { SelfPromotionModel } from '~/types/selfPromotion';
 
 export function meta() {
   return [
@@ -94,39 +96,57 @@ type SavedItem = {
   created_at: string;
 };
 
-export default function Home() {
-  const [saved, setSaved] = useState<SavedItem[]>([]);
+/** 3ツールの結果を1本の新しい順リストにまとめる */
+function mergeSavedItems(
+  selfPromotions: SelfPromotionModel[],
+  motivations: MotivationModel[],
+  entrySheets: EntrySheetModel[],
+): SavedItem[] {
+  return [
+    ...selfPromotions.map((item) => ({
+      id: item.id,
+      toolId: 'self-promotion' as const,
+      href: paths.selfPromotion(item.id),
+      heading: item.title,
+      content: item.content,
+      created_at: item.created_at,
+    })),
+    ...motivations.map((item) => ({
+      id: item.id,
+      toolId: 'motivation' as const,
+      href: paths.motivation(item.id),
+      heading: item.title,
+      content: item.content,
+      created_at: item.created_at,
+    })),
+    ...entrySheets.map((item) => ({
+      id: item.id,
+      toolId: 'entry-sheet' as const,
+      href: paths.entrySheet(item.id),
+      heading: `${item.company_name}／${item.question}`,
+      content: item.content,
+      created_at: item.created_at,
+    })),
+  ].sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
 
-  // localStorage は SPA モードなのでマウント後に読む
-  useEffect(() => {
-    const items: SavedItem[] = [
-      ...listSelfPromotions().map((item) => ({
-        id: item.id,
-        toolId: 'self-promotion' as const,
-        href: paths.selfPromotion(item.id),
-        heading: item.title,
-        content: item.content,
-        created_at: item.created_at,
-      })),
-      ...listMotivations().map((item) => ({
-        id: item.id,
-        toolId: 'motivation' as const,
-        href: paths.motivation(item.id),
-        heading: item.title,
-        content: item.content,
-        created_at: item.created_at,
-      })),
-      ...listEntrySheets().map((item) => ({
-        id: item.id,
-        toolId: 'entry-sheet' as const,
-        href: paths.entrySheet(item.id),
-        heading: `${item.company_name}／${item.question}`,
-        content: item.content,
-        created_at: item.created_at,
-      })),
-    ].sort((a, b) => b.created_at.localeCompare(a.created_at));
-    setSaved(items);
-  }, []);
+const SKELETON_ROWS = ['a', 'b', 'c'];
+
+export default function Home() {
+  // 3本まとめて1つのローディングにする。マージ済みの1リストを出すので、
+  // 部分的に表示すると並び順が崩れて見える
+  const { data, error, isLoading, refetch } = useAsyncData(
+    (signal) =>
+      Promise.all([
+        dataClient.selfPromotions.list(signal),
+        dataClient.motivations.list(signal),
+        dataClient.entrySheets.list(signal),
+      ]).then(([selfPromotions, motivations, entrySheets]) =>
+        mergeSavedItems(selfPromotions, motivations, entrySheets),
+      ),
+    [],
+  );
+  const saved = data ?? [];
 
   return (
     <div className='min-h-dvh bg-gray-1'>
@@ -150,9 +170,27 @@ export default function Home() {
           )}
         </section>
 
-        {saved.length > 0 && (
+        {/* 取得中・失敗も含めて、見せるものがあるときだけ節を出す。
+            ツールカードは取得を待たせない */}
+        {(isLoading || error || saved.length > 0) && (
           <section className='flex flex-col gap-sm'>
             <h2 className='text-md font-bold'>作成した文章</h2>
+
+            {isLoading && (
+              <div className='flex flex-col gap-xs'>
+                {SKELETON_ROWS.map((key) => (
+                  <div
+                    key={key}
+                    className='h-16 animate-pulse rounded-md bg-gray-2'
+                  />
+                ))}
+              </div>
+            )}
+
+            {error && (
+              <ErrorNotice message={error.userMessage} onRetry={refetch} />
+            )}
+
             <ul className='flex flex-col gap-xs'>
               {saved.map((item) => (
                 <li key={item.id}>
