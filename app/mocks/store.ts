@@ -1,19 +1,23 @@
 import { readLocal, writeLocal } from "~/lib/storage";
 
-/** 3ツールとも生成結果は同じ形（タイトル + 本文）なので共通の型にする */
-export type ToolResultModel = {
+/** 保存される全モデルの共通フィールド */
+export type StoredEntity = {
   id: string;
-  title: string;
-  content: string;
   created_at: string;
   updated_at: string;
 };
 
+/** 自己PR・志望動機のように「タイトル + 本文」で表せる結果 */
+export type ToolResultModel = StoredEntity & {
+  title: string;
+  content: string;
+};
+
 /**
  * localStorage を裏に持つコレクションストア。
- * ツールごとにキーを変えて呼ぶだけで使い回せる。
+ * ツールごとにキーと型を変えて呼ぶだけで使い回せる。
  */
-export function createMockStore<T extends ToolResultModel>(storageKey: string) {
+export function createMockStore<T extends StoredEntity>(storageKey: string) {
   const readAll = (): T[] => readLocal<T[]>(storageKey, []);
   const writeAll = (items: T[]): void => writeLocal(storageKey, items);
 
@@ -29,12 +33,11 @@ export function createMockStore<T extends ToolResultModel>(storageKey: string) {
       return readAll().find((item) => item.id === id);
     },
 
-    insert(data: Pick<T, "title" | "content">): T {
+    insert(data: Omit<T, keyof StoredEntity>): T {
       const now = new Date().toISOString();
       const created = {
+        ...data,
         id: crypto.randomUUID(),
-        title: data.title,
-        content: data.content,
         created_at: now,
         updated_at: now,
       } as T;
@@ -42,7 +45,7 @@ export function createMockStore<T extends ToolResultModel>(storageKey: string) {
       return created;
     },
 
-    update(id: string, patch: Pick<T, "title" | "content">): T {
+    update(id: string, patch: Partial<Omit<T, keyof StoredEntity>>): T {
       const items = readAll();
       const index = items.findIndex((item) => item.id === id);
       if (index === -1) {

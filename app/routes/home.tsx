@@ -4,9 +4,9 @@ import { Link } from "react-router";
 import { cn } from "~/lib/cn";
 import { paths } from "~/lib/paths";
 import { TOOL_THEME, type ToolId } from "~/lib/toolTheme";
+import { listEntrySheets } from "~/mocks/entrySheet";
 import { listMotivations } from "~/mocks/motivation";
 import { listSelfPromotions } from "~/mocks/selfPromotion";
-import type { ToolResultModel } from "~/mocks/store";
 
 export function meta() {
   return [
@@ -49,11 +49,19 @@ const TOOLS: ToolCard[] = [
     id: "entry-sheet",
     name: "ES作成・添削",
     description: "設問と企業名からESを作成・添削します",
-    to: null,
+    to: paths.entrySheetsNew,
   },
 ];
 
-type SavedItem = ToolResultModel & { toolId: ToolId; href: string };
+/** 保存リストの表示用。ES はタイトルを持たないので設問を見出しにする */
+type SavedItem = {
+  id: string;
+  toolId: ToolId;
+  href: string;
+  heading: string;
+  content: string;
+  created_at: string;
+};
 
 export default function Home() {
   const [saved, setSaved] = useState<SavedItem[]>([]);
@@ -62,14 +70,28 @@ export default function Home() {
   useEffect(() => {
     const items: SavedItem[] = [
       ...listSelfPromotions().map((item) => ({
-        ...item,
+        id: item.id,
         toolId: "self-promotion" as const,
         href: paths.selfPromotion(item.id),
+        heading: item.title,
+        content: item.content,
+        created_at: item.created_at,
       })),
       ...listMotivations().map((item) => ({
-        ...item,
+        id: item.id,
         toolId: "motivation" as const,
         href: paths.motivation(item.id),
+        heading: item.title,
+        content: item.content,
+        created_at: item.created_at,
+      })),
+      ...listEntrySheets().map((item) => ({
+        id: item.id,
+        toolId: "entry-sheet" as const,
+        href: paths.entrySheet(item.id),
+        heading: `${item.company_name}／${item.question}`,
+        content: item.content,
+        created_at: item.created_at,
       })),
     ].sort((a, b) => b.created_at.localeCompare(a.created_at));
     setSaved(items);
@@ -152,7 +174,7 @@ export default function Home() {
                     >
                       {TOOL_LABEL[item.toolId]}
                     </span>
-                    <span className="text-sm font-bold">{item.title}</span>
+                    <span className="text-sm font-bold">{item.heading}</span>
                     <span className="line-clamp-2 text-xs text-font-gray">
                       {item.content}
                     </span>

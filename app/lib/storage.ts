@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   selfPromotionDraft: "fun-mock-box:self-promotion:draft",
   motivations: "fun-mock-box:motivations",
   motivationDraft: "fun-mock-box:motivation:draft",
+  entrySheets: "fun-mock-box:entry-sheets",
 } as const;
 
 function safeParse<T>(raw: string | null, fallback: T): T {

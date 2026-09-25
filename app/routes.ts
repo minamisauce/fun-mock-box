@@ -29,6 +29,10 @@ export default [
     ]),
   ]),
 
-  // ES はこのブロックを複製する:
-  // ...prefix("entry-sheets", [...]),
+  // ES はウィザードではなく1画面フォーム。作成/添削の2モードで URL が分かれる
+  ...prefix("entry-sheets", [
+    route("new", "routes/entry-sheet/create.tsx"),
+    route("review/new", "routes/entry-sheet/review.tsx"),
+    route(":id", "routes/entry-sheet/result.tsx"),
+  ]),
 ] satisfies RouteConfig;

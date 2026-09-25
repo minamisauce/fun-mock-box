@@ -9,4 +9,8 @@ export const paths = {
   motivationsNew: "/motivations/new",
   motivationsNewStep: (step: string) => `/motivations/new/${step}`,
   motivation: (id: string) => `/motivations/${id}`,
+
+  entrySheetsNew: "/entry-sheets/new",
+  entrySheetsReviewNew: "/entry-sheets/review/new",
+  entrySheet: (id: string) => `/entry-sheets/${id}`,
 } as const;

@@ -14,6 +14,10 @@ type Props = {
   minRows?: number;
   className?: string;
   autoFocus?: boolean;
+  /** 入力欄そのものの id。エラー時のフォーカス移動に使う */
+  id?: string;
+  /** Design System の status=error（赤枠 + 赤いメッセージ） */
+  errorMessage?: string;
 };
 
 export function TextArea({
@@ -26,6 +30,8 @@ export function TextArea({
   minRows = 3,
   className,
   autoFocus = false,
+  id,
+  errorMessage,
 }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const [copied, setCopied] = useState(false);
@@ -57,6 +63,9 @@ export function TextArea({
     <div className={cn("w-full", className)}>
       <textarea
         ref={ref}
+        id={id}
+        aria-invalid={errorMessage ? true : undefined}
+        aria-describedby={errorMessage && id ? `${id}-error` : undefined}
         // biome-ignore lint/a11y/noAutofocus: ウィザードの各ステップで入力欄に直接フォーカスさせたい
         autoFocus={autoFocus}
         rows={minRows}
@@ -67,10 +76,21 @@ export function TextArea({
         // Design System: input/textarea (node 3014:1452)
         // px-md py-sm / 角丸 8px / border-2 / 14px・行間1.5、focus で border を black に
         className={cn(
-          "w-full resize-none overflow-hidden rounded-md border border-border-2 bg-white px-md py-sm text-sm leading-md",
-          "placeholder:text-font-gray focus:border-black focus:outline-none",
+          "w-full resize-none overflow-hidden rounded-md border bg-white px-md py-sm text-sm leading-md",
+          "placeholder:text-font-gray focus:outline-none",
+          errorMessage
+            ? "border-primary-red"
+            : "border-border-2 focus:border-black",
         )}
       />
+      {errorMessage && (
+        <p
+          id={id ? `${id}-error` : undefined}
+          className="mt-xxs text-xs text-primary-red"
+        >
+          {errorMessage}
+        </p>
+      )}
       {(showCount || showCopy) && (
         <div className="mt-xxs flex items-center justify-between">
           {showCount ? (
