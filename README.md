@@ -1,87 +1,64 @@
-# Welcome to React Router!
+# fun-mock-box
 
-A modern, production-ready template for building full-stack React applications using React Router.
+就活BOXの「自己PR作成」「志望動機作成」「ES作成・添削」ツールのプロトタイプ。
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+pnpm workspace の3パッケージ構成で、**バックエンドを起動しなくても動く**のが特徴。
 
-## Features
+```text
+frontend/    React Router v8 の SPA（ssr: false）
+backend/     Hono + Prisma + SQLite の JSON API
+api-schema/  Zod スキーマ・型・決定論的な生成器（FE/BE 共有）
+```
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+AI 生成は入っていない。`api-schema/src/generators/` の決定論的なテンプレートが
+LLM の代わりに文章を組み立てる（同じ入力なら常に同じ結果）。
 
-## Getting Started
+## セットアップ
 
-### Installation
-
-Install the dependencies:
+Node は `.node-version`（24.15.0）。`mise` を使っている場合は自動で切り替わる。
 
 ```bash
-npm install
+pnpm install                        # postinstall で prisma generate まで走る
+pnpm -F @fun/backend db:migrate     # 初回のみ。backend/prisma/dev.db が作られる
+pnpm -F @fun/backend exec prisma db seed   # 任意。動作確認用のデータが入る
 ```
 
-### Development
+## 起動
 
-Start the development server with HMR:
+### オフラインモード（既定）
+
+データは localStorage に入る。バックエンドも DB も不要。
 
 ```bash
-npm run dev
+pnpm dev:frontend   # http://localhost:5173
 ```
 
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
+### バックエンド接続モード
 
 ```bash
-npm run build
+cp frontend/.env.example frontend/.env.local   # VITE_API_URL=/api
+pnpm dev                                        # FE:5173 + BE:3334
 ```
 
-## Deployment
+`VITE_API_URL` の有無だけで切り替わる。`/api` は Vite の dev プロキシ経由で
+`http://localhost:3334` に転送されるので、開発中は CORS 設定が要らない。
 
-### Docker Deployment
+ポートが 3334 なのは、就活BOX の NestJS が 3333 を使うため（同時に起動できる）。
 
-To build and run using Docker:
+> モード間でデータは移行しない。オフラインで作ったものは接続モードでは見えない。
+
+## 検証
 
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+pnpm format      # biome
+pnpm typecheck   # 3パッケージ
+pnpm test        # 3パッケージ
+pnpm build
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+CI（`.github/workflows/check.yml`）はこれらに加えて、環境変数あり／なしの
+2通りのビルドを回している（フロントのみ構成が壊れていないことの担保）。
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+## ドキュメント
 
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+設計判断・ハマりどころ・ディレクトリ規約は [CLAUDE.md](./CLAUDE.md) にまとめてある。

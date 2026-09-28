@@ -1,0 +1,14 @@
+/// 匿名ユーザー。認証は無く、クライアントが発行した UUID だけで同一性を判定する。
+/// 後からログインを足すときは、このモデルに列を足すだけで済む。
+model User {
+  id           String   @id @default(uuid(7))
+  anonymous_id String   @unique
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now()) @updatedAt
+
+  self_promotions SelfPromotion[]
+  motivations     Motivation[]
+  entry_sheets    EntrySheet[]
+
+  @@map("users")
+}

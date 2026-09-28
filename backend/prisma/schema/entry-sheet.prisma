@@ -1,0 +1,36 @@
+/// ES。作成(CREATE)と添削(REVIEW)の2モードを1テーブルで持つ。
+/// ai_explanation_json はスキーマ進化に備えてバージョン列とセットで扱う（本番と同じ形）。
+model EntrySheet {
+  id         String   @id @default(uuid(7))
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id String
+
+  type             EntrySheetType
+  question         String
+  company_name     String
+  content          String
+  /// 添削前の内容（添削のときのみ）
+  original_content String?
+
+  ai_explanation_schema_version EntrySheetAiExplanationSchemaVersion
+  ai_explanation_json           Json
+
+  inflow_source String?
+
+  @@index([user_id, created_at])
+  @@map("entry_sheets")
+}
+
+/// enum は SQLite でも使える（Prisma 6.2 以降。実体は TEXT + CHECK 制約）
+enum EntrySheetType {
+  CREATE
+  REVIEW
+}
+
+enum EntrySheetAiExplanationSchemaVersion {
+  CREATE_V1
+  REVIEW_V1
+}

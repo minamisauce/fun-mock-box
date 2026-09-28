@@ -5,6 +5,8 @@
  */
 
 export const STORAGE_KEYS = {
+  /** 匿名ユーザーID。バックエンド接続時にヘッダで送る */
+  anonymousId: 'fun-mock-box:anonymous-id',
   selfPromotions: 'fun-mock-box:self-promotions',
   selfPromotionDraft: 'fun-mock-box:self-promotion:draft',
   motivations: 'fun-mock-box:motivations',

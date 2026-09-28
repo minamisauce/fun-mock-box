@@ -1,17 +1,98 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DataClient } from '~/data/contract';
 import { DataError } from '~/data/errors';
+import { createHttpClient } from '~/data/http/client';
 import { createLocalClient } from '~/data/local/client';
 
 /**
  * データアクセス層の契約テスト。
  *
- * 同じアサーションを全実装に流すことで、localStorage 実装と HTTP 実装の
+ * 同じアサーションを両実装に流すことで、localStorage 実装と HTTP 実装の
  * 振る舞いがズレたままマージされるのを防ぐ。
- * HTTP 実装を足したらこの配列に1行足すだけでよい。
+ *
+ * HTTP 側は fetch をスタブし、**ローカル実装に委譲**させる。
+ * サーバーのロジックを書き写すのではなく、HTTP 実装が担当する部分
+ * （URL の組み立て・直列化・ステータスからエラーへの写像）だけを検証する。
  */
+function createStubFetch(): typeof fetch {
+  const local = createLocalClient();
+  const resources: Record<string, DataClient[keyof DataClient]> = {
+    'self-promotions': local.selfPromotions,
+    motivations: local.motivations,
+    'entry-sheets': local.entrySheets,
+  };
+
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { 'content-type': 'application/json' },
+    });
+
+  const notFoundResponse = () =>
+    json(
+      {
+        status: 'not_found',
+        error_details: [
+          {
+            field: 'base',
+            message: 'not_found',
+            user_message: '見つかりませんでした。',
+          },
+        ],
+      },
+      404,
+    );
+
+  return async (input, init) => {
+    const url = new URL(String(input), 'http://test');
+    const [resourceName, segment] = url.pathname
+      .replace(/^\/api\//, '')
+      .split('/');
+    const resource = resources[resourceName ?? ''];
+    if (!resource) return notFoundResponse();
+
+    const method = init?.method ?? 'GET';
+    const body = init?.body;
+    const parsed = typeof body === 'string' ? JSON.parse(body) : undefined;
+
+    if (method === 'GET' && !segment) return json(await resource.list());
+    if (method === 'GET' && segment) {
+      const found = await resource.get(segment);
+      return found ? json(found) : notFoundResponse();
+    }
+    if (method === 'POST' && !segment)
+      return json(await resource.create(parsed), 201);
+    if (method === 'POST' && segment === 'review' && 'review' in resource) {
+      return json(await resource.review(parsed), 201);
+    }
+    if (
+      method === 'POST' &&
+      segment === 'extract-text' &&
+      'extractFromImage' in resource
+    ) {
+      const file = (body as FormData).get('image');
+      return json(await resource.extractFromImage(file as File));
+    }
+    if (method === 'PATCH' && segment) {
+      try {
+        return json(await resource.update(segment, parsed));
+      } catch {
+        return notFoundResponse();
+      }
+    }
+    return notFoundResponse();
+  };
+}
+
 const CLIENTS: Array<[string, () => DataClient]> = [
   ['local', () => createLocalClient()],
+  [
+    'http',
+    () => {
+      vi.stubGlobal('fetch', createStubFetch());
+      return createHttpClient('/api');
+    },
+  ],
 ];
 
 const selfPromotionRequest = {
@@ -44,6 +125,7 @@ describe.each(CLIENTS)('%s client', (_name, makeClient) => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   describe('自己PR', () => {

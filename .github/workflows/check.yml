@@ -30,10 +30,11 @@ jobs:
           node-version-file: '.node-version'
           cache: 'pnpm'
 
+      # postinstall で prisma generate まで走る（生成物は git 管理しない）
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      # 落ちた1つで打ち切らず、3つとも結果を出す
+      # 落ちた1つで打ち切らず、全部の結果を出す
       - name: Biome
         run: pnpm run format
 
@@ -41,6 +42,18 @@ jobs:
         if: success() || failure()
         run: pnpm run typecheck
 
+      # backend のテストは SQLite の test.db を毎回作り直すので追加の準備は要らない
       - name: Test
         if: success() || failure()
         run: pnpm run test
+
+      # フロントのみで運用する構成が壊れていないことの担保
+      - name: Build (オフラインモード)
+        if: success() || failure()
+        run: pnpm run build
+
+      - name: Build (バックエンド接続モード)
+        if: success() || failure()
+        run: pnpm run build
+        env:
+          VITE_API_URL: /api

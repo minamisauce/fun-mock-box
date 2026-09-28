@@ -9,3 +9,12 @@ node_modules/
 # React Router
 .react-router/
 build/
+
+# SQLite（WAL を有効にするので -wal / -shm も出る）
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# prisma generate の出力。clone 直後と CI では postinstall で作られる
+backend/src/generated/

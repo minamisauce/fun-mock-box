@@ -1,0 +1,16 @@
+/// 志望動機。構造は自己PRと完全に同一。
+model Motivation {
+  id         String   @id @default(uuid(7))
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id String
+
+  title         String
+  content       String
+  inflow_source String?
+
+  @@index([user_id, created_at])
+  @@map("motivations")
+}

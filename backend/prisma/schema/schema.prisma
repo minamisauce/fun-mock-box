@@ -1,0 +1,15 @@
+generator client {
+  // Prisma 7 で prisma-client-js は廃止。output の指定も必須で、
+  // @prisma/client からではなく生成先から import する
+  provider               = "prisma-client"
+  output                 = "../../src/generated/prisma"
+  runtime                = "nodejs"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "js"
+}
+
+datasource db {
+  // url は prisma.config.ts 側で渡す（Prisma 7）
+  provider = "sqlite"
+}

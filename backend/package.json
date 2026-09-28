@@ -3,6 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:reset": "prisma migrate reset --force",
+    "db:studio": "prisma studio",
     "dev": "tsx watch src/main.ts",
     "start": "tsx src/main.ts",
     "test": "vitest run",
@@ -19,7 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "prisma": "8.0.0-rc.17",
+    "prisma": "7.10.0",
     "tsx": "^4.23.15",
     "typescript": "catalog:",
     "vitest": "catalog:"
