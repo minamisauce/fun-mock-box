@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { generateMotivation } from '~/mocks/templates/motivation';
-import type { CreateMotivationRequest } from '~/types/motivation';
+import type { CreateMotivationRequest } from '../api/motivation/motivation';
+import { generateMotivation } from './motivation';
 
 const req: CreateMotivationRequest = {
   industry: '金融',

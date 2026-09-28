@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    // DOM も node も参照しない。このパッケージが依存ゼロであることの担保
+    "lib": ["ES2022"],
+    "types": []
+  }
+}

@@ -1,4 +1,4 @@
-import type { CreateSelfPromotionRequest } from '~/types/selfPromotion';
+import type { CreateSelfPromotionRequest } from '../api/self-promotion/self-promotion';
 
 /**
  * 擬似「AI生成」。入力値を差し込んだテンプレート文を組み立てる。

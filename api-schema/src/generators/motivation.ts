@@ -1,4 +1,4 @@
-import type { CreateMotivationRequest } from '~/types/motivation';
+import type { CreateMotivationRequest } from '../api/motivation/motivation';
 
 /**
  * 擬似「AI生成」。入力値を差し込んだテンプレート文を組み立てる。

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { generateSelfPromotion } from '~/mocks/templates/selfPromotion';
-import type { CreateSelfPromotionRequest } from '~/types/selfPromotion';
+import type { CreateSelfPromotionRequest } from '../api/self-promotion/self-promotion';
+import { generateSelfPromotion } from './self-promotion';
 
 const req: CreateSelfPromotionRequest = {
   strength: '柔軟性',

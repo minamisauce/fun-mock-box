@@ -3,7 +3,7 @@ import {
   extractSample,
   generateEntrySheetCreate,
   generateEntrySheetReview,
-} from '~/mocks/templates/entrySheet';
+} from './entry-sheet';
 
 const createReq = {
   question: '学生時代に力を入れたこと',

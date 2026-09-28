@@ -10,6 +10,7 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@fun/api-schema": "workspace:*",
     "@react-router/node": "^8.4.0",
     "@react-router/serve": "^8.4.0",
     "clsx": "^2.1.1",

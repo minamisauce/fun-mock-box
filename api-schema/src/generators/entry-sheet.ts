@@ -4,7 +4,7 @@ import type {
   CreateEntrySheetRequest,
   ExtractedEntrySheet,
   ReviewEntrySheetRequest,
-} from '~/types/entrySheet';
+} from '../api/entry-sheet/entry-sheet';
 
 /**
  * 擬似「AI生成」。入力値を差し込んだテンプレートを組み立てる。

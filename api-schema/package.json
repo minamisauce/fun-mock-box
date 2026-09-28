@@ -1,0 +1,21 @@
+{
+  "name": "@fun/api-schema",
+  "private": true,
+  "type": "module",
+  "//": "ビルドしない。exports を .ts ソースへ直接向け、frontend(Vite) / backend(tsx) / tsc の3方向が同じソースを読む",
+  "exports": {
+    ".": "./src/index.ts",
+    "./generators": "./src/generators/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p . --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

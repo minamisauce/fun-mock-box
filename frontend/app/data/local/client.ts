@@ -1,13 +1,13 @@
-import type { DataClient } from '~/data/contract';
-import { createLocalStore } from '~/data/local/store';
-import { STORAGE_KEYS } from '~/lib/storage';
 import {
   extractSample,
   generateEntrySheetCreate,
   generateEntrySheetReview,
-} from '~/mocks/templates/entrySheet';
-import { generateMotivation } from '~/mocks/templates/motivation';
-import { generateSelfPromotion } from '~/mocks/templates/selfPromotion';
+  generateMotivation,
+  generateSelfPromotion,
+} from '@fun/api-schema/generators';
+import type { DataClient } from '~/data/contract';
+import { createLocalStore } from '~/data/local/store';
+import { STORAGE_KEYS } from '~/lib/storage';
 import type { EntrySheetModel } from '~/types/entrySheet';
 import type { MotivationModel } from '~/types/motivation';
 import type { SelfPromotionModel } from '~/types/selfPromotion';
