@@ -2,40 +2,20 @@
   "name": "fun-mock-box",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=24.15.0"
+  },
   "scripts": {
-    "build": "react-router build",
-    "dev": "react-router dev",
+    "dev": "pnpm -r --parallel run dev",
+    "dev:frontend": "pnpm -F @fun/frontend run dev",
+    "build": "pnpm -r run build",
     "format": "biome check",
     "format:fix": "biome check --write",
-    "lint": "biome lint",
-    "start": "react-router-serve ./build/server/index.js",
-    "test": "vitest run",
-    "typecheck": "react-router typegen && tsc"
-  },
-  "dependencies": {
-    "@react-router/node": "^8.4.0",
-    "@react-router/serve": "^8.4.0",
-    "clsx": "^2.1.1",
-    "framer-motion": "^13.4.0",
-    "isbot": "^5.1.36",
-    "lucide-react": "^1.47.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-router": "^8.4.0",
-    "tailwind-merge": "^3.7.0"
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm -r run test"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.14",
-    "@react-router/dev": "^8.4.0",
-    "@tailwindcss/vite": "^4.2.2",
-    "@types/node": "^22",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.7",
-    "jsdom": "^30.1.1",
-    "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.3",
-    "vitest": "^5.0.1"
-  },
-  "packageManager": "pnpm@10.33.2"
+    "@biomejs/biome": "^2.5.14"
+  }
 }

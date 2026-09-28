@@ -1,7 +1,11 @@
 .DS_Store
 .env
-/node_modules/
+.env.local
+
+# 先頭スラッシュを付けない。付けるとルート限定になり、
+# frontend/node_modules などが無視されなくなる
+node_modules/
 
 # React Router
-/.react-router/
-/build/
+.react-router/
+build/

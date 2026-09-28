@@ -1,0 +1,17 @@
+{
+  // 3パッケージ共通の設定。lib / types / jsx / paths は各パッケージ側で足す。
+  // moduleResolution は全パッケージ Bundler で統一する（就活BOX の backend は
+  // NodeNext で import に .js 拡張子が必須だが、その規約はここには持ち込まない）。
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
