@@ -1,6 +1,7 @@
 /** URL を組み立てる場所を1箇所に集約する */
 export const paths = {
   home: '/',
+  history: '/history',
 
   selfPromotionsNew: '/self-promotions/new',
   selfPromotionsNewStep: (step: string) => `/self-promotions/new/${step}`,

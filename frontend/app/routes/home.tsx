@@ -1,14 +1,11 @@
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
-import { ErrorNotice } from '~/components/ErrorNotice';
-import { dataClient } from '~/data';
-import { useAsyncData } from '~/hooks/useAsyncData';
+import { CreationHistoryList } from '~/features/CreationHistory/CreationHistoryList';
+import { useCreationHistory } from '~/features/CreationHistory/useCreationHistory';
 import { cn } from '~/lib/cn';
 import { paths } from '~/lib/paths';
+import { TOOL_ICON } from '~/lib/toolIcon';
 import { TOOL_THEME, type ToolId } from '~/lib/toolTheme';
-import type { EntrySheetModel } from '~/types/entrySheet';
-import type { MotivationModel } from '~/types/motivation';
-import type { SelfPromotionModel } from '~/types/selfPromotion';
 
 export function meta() {
   return [
@@ -23,200 +20,124 @@ export function meta() {
 type ToolCard = {
   id: ToolId;
   name: string;
-  description: string;
   to: string | null;
 };
 
-/** 保存リストでどのツールの文章かを示すラベル */
-const TOOL_LABEL: Record<ToolId, string> = {
-  'self-promotion': '自己PR',
-  motivation: '志望動機',
-  'entry-sheet': 'ES',
-};
-
+// アイコンはここに持たない。作成履歴と同じ絵を使うため ~/lib/toolIcon に集約する
 const TOOLS: ToolCard[] = [
   {
     id: 'self-promotion',
     name: '自己PR作成',
-    description: '4つの質問に答えるだけで自己PRが完成します',
     to: paths.selfPromotionsNew,
   },
   {
     id: 'motivation',
     name: '志望動機作成',
-    description: '業界・業種から志望動機を組み立てます',
     to: paths.motivationsNew,
   },
   {
     id: 'entry-sheet',
     name: 'ES作成・添削',
-    description: '設問と企業名からESを作成・添削します',
     to: paths.entrySheetsNew,
   },
 ];
 
+/** ホームに出す作成履歴の件数。続きは「すべて見る」から作成履歴ページで見る */
+const RECENT_LIMIT = 1;
+
+/**
+ * ツールカード。
+ *
+ * ツール色は左のアイコンタイル（淡色の面 + ツール色のアイコン）だけで表し、
+ * 枠線は border-border-2 に統一する。カードごとに枠の色が変わると
+ * 3枚並んだときに主張が強すぎて、どれが押せるのかが読みにくくなるため。
+ */
 function ToolCardView({ tool }: { tool: ToolCard }) {
   const theme = TOOL_THEME[tool.id];
+  const Icon = TOOL_ICON[tool.id];
+  const enabled = tool.to !== null;
+
   return (
     <div
       className={cn(
-        'flex flex-col gap-xxs rounded-lg border-2 p-md',
-        tool.to ? cn(theme.border, 'bg-white') : 'border-border-2 bg-gray-1',
+        'flex items-center gap-md rounded-lg border border-border-2 p-md transition-shadow',
+        enabled ? 'bg-white hover:shadow-all-sides' : 'bg-gray-1',
       )}
     >
-      <div className='flex items-center justify-between'>
+      <span
+        aria-hidden
+        className={cn(
+          'flex size-12 shrink-0 items-center justify-center rounded-xl',
+          enabled ? theme.bgSoft : 'bg-gray-2',
+        )}
+      >
+        <Icon size={24} className={enabled ? theme.text : 'text-font-gray'} />
+      </span>
+
+      <div className='flex min-w-px flex-1 flex-col gap-3xs'>
         <span
           className={cn(
-            'text-md font-bold',
-            tool.to ? theme.text : 'text-font-gray',
+            'text-md font-bold leading-sm',
+            enabled ? 'text-black' : 'text-font-gray',
           )}
         >
           {tool.name}
         </span>
-        {tool.to ? (
-          <ChevronRight size={24} aria-hidden className='text-font-gray' />
-        ) : (
-          <span className='rounded-infinity bg-gray-3 px-xs py-3xs text-xxs text-font-gray'>
-            準備中
-          </span>
-        )}
       </div>
-      <p className='text-xs leading-md text-font-gray'>{tool.description}</p>
     </div>
   );
 }
 
-/** 保存リストの表示用。ES はタイトルを持たないので設問を見出しにする */
-type SavedItem = {
-  id: string;
-  toolId: ToolId;
-  href: string;
-  heading: string;
-  content: string;
-  created_at: string;
-};
-
-/** 3ツールの結果を1本の新しい順リストにまとめる */
-function mergeSavedItems(
-  selfPromotions: SelfPromotionModel[],
-  motivations: MotivationModel[],
-  entrySheets: EntrySheetModel[],
-): SavedItem[] {
-  return [
-    ...selfPromotions.map((item) => ({
-      id: item.id,
-      toolId: 'self-promotion' as const,
-      href: paths.selfPromotion(item.id),
-      heading: item.title,
-      content: item.content,
-      created_at: item.created_at,
-    })),
-    ...motivations.map((item) => ({
-      id: item.id,
-      toolId: 'motivation' as const,
-      href: paths.motivation(item.id),
-      heading: item.title,
-      content: item.content,
-      created_at: item.created_at,
-    })),
-    ...entrySheets.map((item) => ({
-      id: item.id,
-      toolId: 'entry-sheet' as const,
-      href: paths.entrySheet(item.id),
-      heading: `${item.company_name}／${item.question}`,
-      content: item.content,
-      created_at: item.created_at,
-    })),
-  ].sort((a, b) => b.created_at.localeCompare(a.created_at));
-}
-
-const SKELETON_ROWS = ['a', 'b', 'c'];
-
 export default function Home() {
-  // 3本まとめて1つのローディングにする。マージ済みの1リストを出すので、
-  // 部分的に表示すると並び順が崩れて見える
-  const { data, error, isLoading, refetch } = useAsyncData(
-    (signal) =>
-      Promise.all([
-        dataClient.selfPromotions.list(signal),
-        dataClient.motivations.list(signal),
-        dataClient.entrySheets.list(signal),
-      ]).then(([selfPromotions, motivations, entrySheets]) =>
-        mergeSavedItems(selfPromotions, motivations, entrySheets),
-      ),
-    [],
-  );
-  const saved = data ?? [];
+  const { data, error, isLoading, refetch } = useCreationHistory();
+  const history = data ?? [];
 
   return (
-    <div className='min-h-dvh bg-gray-1'>
-      <div className='mx-auto flex min-h-dvh w-full flex-col gap-xxl bg-white px-md py-xxl sm:w-tool sm:shadow-all-sides'>
-        <header className='flex flex-col gap-xs'>
-          <h1 className='text-xl font-bold leading-sm'>就活BOX ツール</h1>
-          <p className='text-xs text-font-gray'>
-            バックエンドなしで動くモックです
-          </p>
-        </header>
+    <div className='flex flex-col gap-xxl px-md py-xxl'>
+      <header className='flex flex-col gap-xs'>
+        <h1 className='text-lg font-bold leading-sm'>就活BOX ツール</h1>
+      </header>
 
+      {/* 取得中・失敗も含めて、見せるものがあるときだけ節を出す。
+          ツールカードは取得を待たせない */}
+      {(isLoading || error || history.length > 0) && (
         <section className='flex flex-col gap-sm'>
-          {TOOLS.map((tool) =>
-            tool.to ? (
-              <Link key={tool.id} to={tool.to} className='hover:opacity-60'>
-                <ToolCardView tool={tool} />
-              </Link>
-            ) : (
-              <ToolCardView key={tool.id} tool={tool} />
-            ),
-          )}
+          <div className='flex items-center justify-between gap-xs'>
+            <h2 className='text-md font-bold'>最近の作成履歴</h2>
+            {/* 件数に関わらず出す。ここが作成履歴ページへの主導線なので、
+                「あと1件だけ」のときに導線が消えると一覧へ行けなくなる */}
+            <Link
+              to={paths.history}
+              className='flex shrink-0 items-center gap-3xs text-xs text-font-gray hover:opacity-60'
+            >
+              すべて見る
+              <ChevronRight size={14} aria-hidden />
+            </Link>
+          </div>
+
+          <CreationHistoryList
+            items={history.slice(0, RECENT_LIMIT)}
+            isLoading={isLoading}
+            error={error}
+            onRetry={refetch}
+            skeletonRows={RECENT_LIMIT}
+          />
         </section>
+      )}
 
-        {/* 取得中・失敗も含めて、見せるものがあるときだけ節を出す。
-            ツールカードは取得を待たせない */}
-        {(isLoading || error || saved.length > 0) && (
-          <section className='flex flex-col gap-sm'>
-            <h2 className='text-md font-bold'>作成した文章</h2>
-
-            {isLoading && (
-              <div className='flex flex-col gap-xs'>
-                {SKELETON_ROWS.map((key) => (
-                  <div
-                    key={key}
-                    className='h-16 animate-pulse rounded-md bg-gray-2'
-                  />
-                ))}
-              </div>
-            )}
-
-            {error && (
-              <ErrorNotice message={error.userMessage} onRetry={refetch} />
-            )}
-
-            <ul className='flex flex-col gap-xs'>
-              {saved.map((item) => (
-                <li key={item.id}>
-                  <Link
-                    to={item.href}
-                    className='flex flex-col gap-3xs rounded-md border border-border-2 p-sm hover:opacity-60'
-                  >
-                    <span
-                      className={cn(
-                        'text-xxs font-bold',
-                        TOOL_THEME[item.toolId].text,
-                      )}
-                    >
-                      {TOOL_LABEL[item.toolId]}
-                    </span>
-                    <span className='text-sm font-bold'>{item.heading}</span>
-                    <span className='line-clamp-2 text-xs text-font-gray'>
-                      {item.content}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
+      <section className='flex flex-col gap-sm'>
+        <h2 className='text-md font-bold'>ツール一覧</h2>
+        {TOOLS.map((tool) =>
+          tool.to ? (
+            // hover の見た目はカード側（影）が持つので、ここでは透過させない
+            <Link key={tool.id} to={tool.to} className='block'>
+              <ToolCardView tool={tool} />
+            </Link>
+          ) : (
+            <ToolCardView key={tool.id} tool={tool} />
+          ),
         )}
-      </div>
+      </section>
     </div>
   );
 }

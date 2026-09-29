@@ -51,7 +51,7 @@ export function SelectCard({
             onClick={() => onSelect(option.value)}
             aria-pressed={selected}
             className={cn(
-              'flex flex-col items-center justify-center gap-xs rounded-md border-b p-xxl text-center text-sm font-bold leading-md transition-colors',
+              'flex flex-col items-center justify-center gap-xs rounded-md border-b p-xl text-center text-sm font-bold leading-md transition-colors',
               selected
                 ? cn(theme.border, theme.text, theme.bgSoft)
                 : 'border-border-2 bg-gray-2 text-black hover:bg-gray-3',

@@ -25,7 +25,10 @@ export function ProgressBar({
   className,
 }: Props) {
   const answered = Math.min(Math.max(current + 1, 0), total);
-  const percent = (answered / total) * 100;
+  // 分母は total ではなく total + 1（就活BOX の ProgressBar と同じ）。
+  // 表示中の問題は未回答なので、1問目で 0% に見えず、
+  // 最終問（残り1問）でバーが埋まりきらないようにするため。
+  const percent = (answered / (total + 1)) * 100;
   // status=1 のとき「残り7問（全7問）」なので、残数は total - current
   const remaining = Math.max(total - current, 0);
 
@@ -34,7 +37,7 @@ export function ProgressBar({
       className={cn('flex w-full items-center gap-[10px]', className)}
       role='progressbar'
       aria-valuemin={0}
-      aria-valuemax={total}
+      aria-valuemax={total + 1}
       aria-valuenow={answered}
       aria-valuetext={`ステップ ${answered} / ${total}`}
     >

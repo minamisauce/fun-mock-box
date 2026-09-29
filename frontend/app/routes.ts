@@ -9,7 +9,11 @@ import {
 // remix-flat-routes は使っていない。
 // ファイルを置くだけでは認識されないので、必ずここに登録すること。
 export default [
-  index('routes/home.tsx'),
+  // ボトムナビを持つ画面。ツール画面（ToolLayout）はこの外に置く
+  layout('routes/layout.tsx', [
+    index('routes/home.tsx'),
+    route('history', 'routes/history.tsx'),
+  ]),
 
   ...prefix('self-promotions', [
     layout('routes/self-promotion/layout.tsx', [
