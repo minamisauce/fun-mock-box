@@ -12,6 +12,7 @@ export const paths = {
   motivation: (id: string) => `/motivations/${id}`,
 
   entrySheetsNew: '/entry-sheets/new',
+  entrySheetsNewStep: (step: string) => `/entry-sheets/new/${step}`,
   entrySheetsReviewNew: '/entry-sheets/review/new',
   entrySheetsReviewNewStep: (step: string) =>
     `/entry-sheets/review/new/${step}`,

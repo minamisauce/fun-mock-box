@@ -80,15 +80,13 @@ export function TextArea({
         className={cn(
           'w-full resize-none overflow-hidden rounded-md border bg-white px-md py-sm text-sm leading-md',
           'placeholder:text-font-gray focus:outline-none',
-          errorMessage
-            ? 'border-primary-red'
-            : 'border-border-2 focus:border-black',
+          errorMessage ? 'border-danger' : 'border-border-2 focus:border-black',
         )}
       />
       {errorMessage && (
         <p
           id={id ? `${id}-error` : undefined}
-          className='mt-xxs text-xs text-primary-red'
+          className='mt-xxs text-xs text-danger'
         >
           {errorMessage}
         </p>

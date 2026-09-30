@@ -12,6 +12,8 @@ model EntrySheet {
   question         String
   company_name     String
   content          String
+  /// 作成時に指定された文字数（作成のときのみ・任意）
+  character_limit  Int?
   /// 添削前の内容（添削のときのみ）
   original_content String?
 

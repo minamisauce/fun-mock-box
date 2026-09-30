@@ -6,42 +6,42 @@ import { GeneratingOverlay } from '~/components/GeneratingOverlay';
 import { ProgressBar } from '~/components/ProgressBar';
 import { ToolLayout } from '~/components/ToolLayout';
 import { dataClient } from '~/data';
-import { entrySheetReviewSteps } from '~/features/EntrySheet/constants/reviewSteps';
-import { useEntrySheetReviewForm } from '~/features/EntrySheet/hooks/useEntrySheetReviewForm';
+import { entrySheetCreateSteps } from '~/features/EntrySheet/constants/createSteps';
+import { useEntrySheetCreateForm } from '~/features/EntrySheet/hooks/useEntrySheetCreateForm';
 import { useStepNavigation } from '~/features/ToolWizard/useStepNavigation';
 import { useAsyncAction } from '~/hooks/useAsyncAction';
 import { GENERATING_MIN_DURATION_MS, withMinimumDuration } from '~/lib/delay';
 import { paths } from '~/lib/paths';
-import type { ReviewEntrySheetRequest } from '~/types/entrySheet';
+import type { CreateEntrySheetRequest } from '~/types/entrySheet';
 
 const GENERATING_MESSAGES = [
-  '文章を読み込んでいます…',
-  '改善点を洗い出しています…',
-  '添削案を作成しています…',
+  '設問とエピソードを読み取っています…',
+  '構成を組み立てています…',
+  '文章を作成しています…',
 ] as const;
 
 export function meta() {
-  return [{ title: 'ES添削 | fun-mock-box' }];
+  return [{ title: 'ES作成 | fun-mock-box' }];
 }
 
-export default function EntrySheetReviewStep() {
+export default function EntrySheetCreateStep() {
   const navigate = useNavigate();
-  const { values, toRequest, reset } = useEntrySheetReviewForm();
-  // 添削成功後、結果画面へ移り終えるまでの状態。
+  const { values, toRequest, reset } = useEntrySheetCreateForm();
+  // 生成成功後、結果画面へ移り終えるまでの状態。
   // isPending は解決した時点で false に戻るので、これが無いと
   // reset() 直後に下のガードが走ってステップ1へ飛ばされる
   const [isLeaving, setIsLeaving] = useState(false);
 
-  const review = useAsyncAction((request: ReviewEntrySheetRequest) =>
+  const create = useAsyncAction((request: CreateEntrySheetRequest) =>
     withMinimumDuration(
-      dataClient.entrySheets.review(request),
+      dataClient.entrySheets.create(request),
       GENERATING_MIN_DURATION_MS,
     ),
   );
-  const isSubmitting = review.isPending || isLeaving;
+  const isSubmitting = create.isPending || isLeaving;
 
   const { currentStep, currentStepObject, isLastStep, handleNextStep } =
-    useStepNavigation(entrySheetReviewSteps, paths.entrySheetsReviewNew);
+    useStepNavigation(entrySheetCreateSteps, paths.entrySheetsNew);
 
   // 直リンク・ブラウザバック対策:
   // このステップに必要な入力が揃っていなければ先頭ステップへ戻す
@@ -52,19 +52,28 @@ export default function EntrySheetReviewStep() {
       (key) => !values[key]?.trim(),
     );
     if (missing) {
-      navigate(paths.entrySheetsReviewNew, { replace: true });
+      navigate(paths.entrySheetsNew, { replace: true });
     }
   }, [currentStepObject, values, navigate, isSubmitting]);
 
   const handleSubmit = async () => {
     const request = toRequest();
     if (!request) {
-      navigate(paths.entrySheetsReviewNew, { replace: true });
+      navigate(paths.entrySheetsNew, { replace: true });
       return;
     }
 
-    const created = await review.run(request);
-    // 失敗時は review.error に載っているので、ここでは何もしない
+    // character_limit は任意なので toRequest() には含まれない。
+    // 空文字は「指定しない」なので undefined のまま送る。
+    const created = await create.run({
+      question: request.question,
+      company_name: request.company_name,
+      episode: request.episode,
+      character_limit: values.character_limit
+        ? Number(values.character_limit)
+        : undefined,
+    });
+    // 失敗時は create.error に載っているので、ここでは何もしない
     if (!created) return;
 
     setIsLeaving(true);
@@ -82,18 +91,18 @@ export default function EntrySheetReviewStep() {
   return (
     <>
       <ToolLayout
-        title='ES添削'
+        title='ES作成'
         onBack={() => navigate(-1)}
         headerSlot={
           <ProgressBar
             current={currentStep}
-            total={entrySheetReviewSteps.length}
+            total={entrySheetCreateSteps.length}
           />
         }
       >
-        {review.error && (
+        {create.error && (
           <ErrorNotice
-            message={review.error.userMessage}
+            message={create.error.userMessage}
             className='mb-md'
             onRetry={handleSubmit}
           />

@@ -3,18 +3,16 @@ import { useNavigate, useParams } from 'react-router';
 import { Button } from '~/components/Button';
 import { ErrorNotice } from '~/components/ErrorNotice';
 import { TextArea } from '~/components/TextArea';
+import { Toast } from '~/components/Toast';
 import { ToolLayout } from '~/components/ToolLayout';
 import { dataClient } from '~/data';
 import { useAsyncAction } from '~/hooks/useAsyncAction';
 import { useAsyncData } from '~/hooks/useAsyncData';
 import { paths } from '~/lib/paths';
-import { TOOL_THEME } from '~/lib/toolTheme';
 import type {
   MotivationModel,
   UpdateMotivationRequest,
 } from '~/types/motivation';
-
-const theme = TOOL_THEME.motivation;
 
 export function meta() {
   return [{ title: '作成した志望動機 | fun-mock-box' }];
@@ -49,7 +47,6 @@ export default function MotivationResult() {
           <Button
             text='トップへ戻る'
             variant='outline'
-            theme={theme}
             onClick={() => navigate(paths.home)}
           />
         </div>
@@ -67,7 +64,6 @@ export default function MotivationResult() {
           <Button
             text='トップへ戻る'
             variant='outline'
-            theme={theme}
             onClick={() => navigate(paths.home)}
           />
         </div>
@@ -90,7 +86,8 @@ function MotivationEditor({ item }: { item: MotivationModel }) {
   });
   const [title, setTitle] = useState(item.title);
   const [content, setContent] = useState(item.content);
-  const [savedAt, setSavedAt] = useState<string | null>(null);
+  // 保存成功で出すトースト。null の間は出ない
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const save = useAsyncAction((patch: UpdateMotivationRequest) =>
     dataClient.motivations.update(item.id, patch),
@@ -104,62 +101,60 @@ function MotivationEditor({ item }: { item: MotivationModel }) {
     // 失敗しても入力は消さない。save.error に文言が載る
     if (!updated) return;
     setSaved({ title: updated.title, content: updated.content });
-    setSavedAt(updated.updated_at);
+    setToastMessage('更新しました');
   };
 
   return (
-    <ToolLayout title='作成した志望動機' onBack={() => navigate(paths.home)}>
-      <div className='flex flex-col gap-xl'>
-        <div className='flex flex-col gap-xs'>
-          <span className='text-xs font-bold text-font-gray'>タイトル</span>
-          <input
-            type='text'
-            value={title}
-            maxLength={40}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              save.clearError();
-            }}
-            className='w-full rounded-md border border-border-2 px-md py-sm text-sm font-bold leading-md focus:border-black focus:outline-none'
-          />
+    <>
+      <ToolLayout title='作成した志望動機' onBack={() => navigate(paths.home)}>
+        <div className='flex flex-col gap-xl'>
+          <div className='flex flex-col gap-xs'>
+            <span className='text-xs font-bold text-font-gray'>タイトル</span>
+            <input
+              type='text'
+              value={title}
+              maxLength={40}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                save.clearError();
+              }}
+              className='w-full rounded-md border border-border-2 px-md py-sm text-sm font-bold leading-md focus:border-black focus:outline-none'
+            />
+          </div>
+
+          <div className='flex flex-col gap-xs'>
+            <span className='text-xs font-bold text-font-gray'>本文</span>
+            <TextArea
+              value={content}
+              onChange={(value) => {
+                setContent(value);
+                save.clearError();
+              }}
+              minRows={14}
+              showCount
+              showCopy
+            />
+          </div>
+
+          <div className='flex flex-col gap-sm'>
+            <Button
+              text='保存する'
+              onClick={handleSave}
+              disabled={!isDirty}
+              isPending={save.isPending}
+            />
+            <Button
+              text='もう一度作成する'
+              variant='outline'
+              onClick={() => navigate(paths.motivationsNew)}
+            />
+          </div>
+
+          {save.error && <ErrorNotice message={save.error.userMessage} />}
         </div>
+      </ToolLayout>
 
-        <div className='flex flex-col gap-xs'>
-          <span className='text-xs font-bold text-font-gray'>本文</span>
-          <TextArea
-            value={content}
-            onChange={(value) => {
-              setContent(value);
-              save.clearError();
-            }}
-            minRows={14}
-            showCount
-            showCopy
-          />
-        </div>
-
-        <div className='flex flex-col gap-sm'>
-          <Button
-            text='保存する'
-            theme={theme}
-            onClick={handleSave}
-            disabled={!isDirty}
-            isPending={save.isPending}
-          />
-          <Button
-            text='もう一度作成する'
-            variant='outline'
-            theme={theme}
-            onClick={() => navigate(paths.motivationsNew)}
-          />
-        </div>
-
-        {save.error && <ErrorNotice message={save.error.userMessage} />}
-
-        {savedAt && !isDirty && (
-          <p className='text-center text-xs text-font-gray'>保存しました</p>
-        )}
-      </div>
-    </ToolLayout>
+      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+    </>
   );
 }

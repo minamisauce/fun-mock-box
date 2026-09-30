@@ -19,6 +19,7 @@ export async function createEntrySheet(
       type: 'CREATE',
       question: params.question,
       company_name: params.company_name,
+      character_limit: params.character_limit,
       content,
       ai_explanation_schema_version: 'CREATE_V1',
       ai_explanation_json,

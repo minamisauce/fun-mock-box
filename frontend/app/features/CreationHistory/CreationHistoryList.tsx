@@ -2,10 +2,9 @@ import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
 import { ErrorNotice } from '~/components/ErrorNotice';
 import type { DataError } from '~/data/errors';
-import { cn } from '~/lib/cn';
 import { formatDateTime } from '~/lib/formatDateTime';
 import { TOOL_ACTION } from '~/lib/toolAction';
-import { TOOL_THEME } from '~/lib/toolTheme';
+import { toolScope } from '~/lib/toolScope';
 import type { HistoryItem } from './types';
 
 type Props = {
@@ -64,13 +63,14 @@ export function CreationHistoryList({
     <ul className='flex flex-col gap-xs'>
       {items.map((item) => {
         const action = TOOL_ACTION[item.actionId];
-        const theme = TOOL_THEME[action.toolId];
         const Icon = action.icon;
         const updatedAt = formatDateTime(item.updated_at);
 
         return (
           <li key={item.id}>
+            {/* 1画面に複数ツールの行が並ぶので、ツール色のスコープは行単位で開く */}
             <Link
+              {...toolScope(action.toolId)}
               to={item.href}
               className='flex flex-col gap-xs rounded-lg border border-border-2 bg-white p-sm transition-shadow hover:shadow-all-sides'
             >
@@ -88,15 +88,12 @@ export function CreationHistoryList({
                 <span
                   role='img'
                   aria-label={action.label}
-                  className={cn(
-                    // ツール一覧と同じ角丸四角。台座は 48px → 32px なので、
-                    // 半径も rounded-xl(16px) ではなく rounded-md(8px) に落とす
-                    // （32px に 16px を当てると真円になってしまう）
-                    'flex size-8 shrink-0 items-center justify-center rounded-md',
-                    theme.bgSoft,
-                  )}
+                  // ツール一覧と同じ角丸四角。台座は 48px → 32px なので、
+                  // 半径も rounded-xl(16px) ではなく rounded-md(8px) に落とす
+                  // （32px に 16px を当てると真円になってしまう）
+                  className='flex size-8 shrink-0 items-center justify-center rounded-md bg-primary-soft'
                 >
-                  <Icon size={16} aria-hidden className={theme.text} />
+                  <Icon size={16} aria-hidden className='text-primary' />
                 </span>
 
                 <div className='flex min-w-px flex-1 flex-col gap-3xs'>

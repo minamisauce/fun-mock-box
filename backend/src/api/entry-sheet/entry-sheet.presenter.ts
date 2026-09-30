@@ -28,6 +28,7 @@ export function toEntrySheetModel(row: EntrySheetRow): EntrySheetModel {
     return {
       ...base,
       type: 'CREATE',
+      character_limit: row.character_limit ?? undefined,
       ai_explanation_schema_version: 'CREATE_V1',
       ai_explanation_json: row.ai_explanation_json as AiExplanationCreateV1,
     };

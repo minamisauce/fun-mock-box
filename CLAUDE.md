@@ -118,7 +118,7 @@ backend も同じ罠がある。`/review` `/extract-text` のような固定パ�
 
 | 種別 | 名前空間 | 例 |
 |---|---|---|
-| 色 | `--color-*` | `bg-primary-self-promotion` |
+| 色 | `--color-*` | `bg-primary`, `text-danger` |
 | 余白 | `--spacing-*` | `p-md`, `gap-xs` |
 | 文字サイズ | `--text-*` | `text-sm` |
 | 行間 | `--leading-*` | `leading-md` |
@@ -127,9 +127,38 @@ backend も同じ罠がある。`/review` `/extract-text` のような固定パ�
 | 幅 | `--container-*` | `w-tool`（375px） |
 
 - **生の hex（`bg-[#5557e4]`）を書かない。** 必ずトークン名を使う
-- **クラス名を動的生成しない。** ツール色は `frontend/app/lib/toolTheme.ts` に
-  完全なクラス文字列で持ち、`theme={TOOL_THEME["self-promotion"]}` の形で渡す
+- **クラス名を動的生成しない**（Tailwind が静的スキャンで拾えない）。
+  ツール色は下のとおり CSS 変数側で切り替わるので、組み立てる必要はない
 - **ダークモードは使わない**（`dark:` を書かない）
+
+#### 色は3層。`primary` はただ1つしかない
+
+| 層 | トークン | 使いどころ |
+|---|---|---|
+| primitive | `--color-purple-50` / `--color-red-50` 等 | 色の実体。クラスとして直接書かない |
+| semantic | `brand` / `danger` | ツールに依存しない固定の役割 |
+| contextual | `primary` / `primary-soft` | 「今いる面の主役色」 |
+
+どれを使うかは「**この画面はツールの中か、外か**」の一問で決まる。
+
+| 場面 | 使うもの |
+|---|---|
+| ツールの中（ボタン・進行・選択状態） | `bg-primary` / `bg-primary-soft` |
+| どのツールでもない面（ホームのヘッダー・BottomNav） | `bg-brand` |
+| ツールに関係なく意味が固定のもの（エラー・必須マーク） | `text-danger` |
+
+ツール色は `data-tool` が付いた要素の配下で `--color-primary` が差し替わる
+（実体は `app.css` の `[data-tool='...']`）。したがって
+**共通コンポーネントはツール色を props で受け取らない。** `bg-primary` と書くだけでよい。
+
+`data-tool` は `frontend/app/lib/toolScope.ts` の `toolScope()` で付ける（手書きしない）。
+置く場所は**各ツールの layout に1回だけ**。例外は2つ。
+
+- ホーム / 作成履歴: 1画面に複数ツールが並ぶので、カード・行の単位で開く
+- `routes/entry-sheet/result.tsx`: routes.ts 上 layout の**外**にあるため画面側で開く
+
+⚠ 付け忘れても既定の `brand` 色で描画されるだけでエラーにならない。新しいツール画面を
+足すときは layout でスコープを開いたか確認すること。
 
 ### 9. ステップ定義とコンポーネントの循環参照に注意
 
@@ -153,7 +182,8 @@ backend も同じ罠がある。`/review` `/extract-text` のような固定パ�
 | `api-schema/src/api/` | 1 feature 1ファイル |
 | `api-schema/src/generators/` | LLM の代わりの決定論的生成器 |
 
-**共通コンポーネントにツール名をハードコードしない。** 色は props で渡す。
+**共通コンポーネントにツール名をハードコードしない。** 色も props で渡さない
+（`bg-primary` と書けば、居るツールの色になる。§8 を参照）。
 
 backend は 1 API = 1 usecase ファイル。就活BOX の `*.module.ts` / `validators/` /
 repository 層は持ち込まない（3ドメインの規模に対して過剰なため）。

@@ -39,7 +39,7 @@ export const ENTRY_SHEETS_TEXT = {
       '短いキーワードを入力するだけで、AIが文章をきれいに仕上げます。',
   },
   originalContent: {
-    label: 'あなたのESを入力',
+    label: '本文',
     placeholder:
       '作成済みのESを入力して下さい。AIがあなたの文章を自然で伝わりやすい形に整えます。',
   },
@@ -70,9 +70,5 @@ export const ENTRY_SHEETS_COMPANY_NAME_SUGGESTIONS = [
   '株式会社サンプルメディア',
 ] as const;
 
-/** 生成AI利用にあたっての注意書き（本番 TextCreateForm の文言を踏襲） */
-export const ENTRY_SHEETS_NOTICES = [
-  '生成された文章はそのまま提出せず、必ずご自身で内容を確認・修正してください。',
-  '事実と異なる内容が含まれる場合があります。',
-  '入力された内容は文章生成のためにのみ利用されます。',
-] as const;
+// 生成AIの注意書きは ~/components/ConsentNotice が3ツール共通で持つ
+// （Figma 自己PRツール node 3578:22404 の文言）

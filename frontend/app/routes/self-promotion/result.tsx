@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { Button } from '~/components/Button';
 import { ErrorNotice } from '~/components/ErrorNotice';
 import { TextArea } from '~/components/TextArea';
+import { Toast } from '~/components/Toast';
 import { ToolLayout } from '~/components/ToolLayout';
 import { dataClient } from '~/data';
 import { useAsyncAction } from '~/hooks/useAsyncAction';
@@ -85,7 +86,8 @@ function SelfPromotionEditor({ item }: { item: SelfPromotionModel }) {
   });
   const [title, setTitle] = useState(item.title);
   const [content, setContent] = useState(item.content);
-  const [savedAt, setSavedAt] = useState<string | null>(null);
+  // 保存成功で出すトースト。null の間は出ない
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const save = useAsyncAction((patch: UpdateSelfPromotionRequest) =>
     dataClient.selfPromotions.update(item.id, patch),
@@ -99,61 +101,61 @@ function SelfPromotionEditor({ item }: { item: SelfPromotionModel }) {
     // 失敗しても入力は消さない。save.error に文言が載る
     if (!updated) return;
     setSaved({ title: updated.title, content: updated.content });
-    setSavedAt(updated.updated_at);
+    setToastMessage('更新しました');
   };
 
   return (
-    <ToolLayout title='作成した自己PR' onBack={() => navigate(paths.home)}>
-      <div className='flex flex-col gap-xl'>
-        <div className='flex flex-col gap-xs'>
-          <span className='text-xs font-bold text-font-gray'>タイトル</span>
-          <input
-            type='text'
-            value={title}
-            maxLength={40}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              save.clearError();
-            }}
-            // Design System: input/textField (node 3014:1434) と同じ寸法
-            className='w-full rounded-md border border-border-2 px-md py-sm text-sm font-bold leading-md focus:border-black focus:outline-none'
-          />
+    <>
+      <ToolLayout title='作成した自己PR' onBack={() => navigate(paths.home)}>
+        <div className='flex flex-col gap-xl'>
+          <div className='flex flex-col gap-xs'>
+            <span className='text-xs font-bold text-font-gray'>タイトル</span>
+            <input
+              type='text'
+              value={title}
+              maxLength={40}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                save.clearError();
+              }}
+              // Design System: input/textField (node 3014:1434) と同じ寸法
+              className='w-full rounded-md border border-border-2 px-md py-sm text-sm font-bold leading-md focus:border-black focus:outline-none'
+            />
+          </div>
+
+          <div className='flex flex-col gap-xs'>
+            <span className='text-xs font-bold text-font-gray'>本文</span>
+            <TextArea
+              value={content}
+              onChange={(value) => {
+                setContent(value);
+                save.clearError();
+              }}
+              minRows={12}
+              showCount
+              showCopy
+            />
+          </div>
+
+          <div className='flex flex-col gap-sm'>
+            <Button
+              text='保存する'
+              onClick={handleSave}
+              disabled={!isDirty}
+              isPending={save.isPending}
+            />
+            <Button
+              text='もう一度作成する'
+              variant='outline'
+              onClick={() => navigate(paths.selfPromotionsNew)}
+            />
+          </div>
+
+          {save.error && <ErrorNotice message={save.error.userMessage} />}
         </div>
+      </ToolLayout>
 
-        <div className='flex flex-col gap-xs'>
-          <span className='text-xs font-bold text-font-gray'>本文</span>
-          <TextArea
-            value={content}
-            onChange={(value) => {
-              setContent(value);
-              save.clearError();
-            }}
-            minRows={12}
-            showCount
-            showCopy
-          />
-        </div>
-
-        <div className='flex flex-col gap-sm'>
-          <Button
-            text='保存する'
-            onClick={handleSave}
-            disabled={!isDirty}
-            isPending={save.isPending}
-          />
-          <Button
-            text='もう一度作成する'
-            variant='outline'
-            onClick={() => navigate(paths.selfPromotionsNew)}
-          />
-        </div>
-
-        {save.error && <ErrorNotice message={save.error.userMessage} />}
-
-        {savedAt && !isDirty && (
-          <p className='text-center text-xs text-font-gray'>保存しました</p>
-        )}
-      </div>
-    </ToolLayout>
+      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+    </>
   );
 }

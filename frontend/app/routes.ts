@@ -33,9 +33,12 @@ export default [
     ]),
   ]),
 
-  // ES は作成が1画面フォーム、添削がウィザードで入力方式が分かれる
+  // ES も作成・添削ともに1問1答のウィザード（自己PR・志望動機と同じ流れ）
   ...prefix('entry-sheets', [
-    route('new', 'routes/entry-sheet/create.tsx'),
+    layout('routes/entry-sheet/create-layout.tsx', [
+      route('new', 'routes/entry-sheet/create-index.tsx'),
+      route('new/:step', 'routes/entry-sheet/create-step.tsx'),
+    ]),
     layout('routes/entry-sheet/review-layout.tsx', [
       route('review/new', 'routes/entry-sheet/review-index.tsx'),
       route('review/new/:step', 'routes/entry-sheet/review-step.tsx'),

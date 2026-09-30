@@ -12,6 +12,7 @@ export const STORAGE_KEYS = {
   motivations: 'fun-mock-box:motivations',
   motivationDraft: 'fun-mock-box:motivation:draft',
   entrySheets: 'fun-mock-box:entry-sheets',
+  entrySheetCreateDraft: 'fun-mock-box:entry-sheet-create:draft',
   entrySheetReviewDraft: 'fun-mock-box:entry-sheet-review:draft',
 } as const;
 

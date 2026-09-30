@@ -8,6 +8,15 @@ export type StoredEntity = {
   updated_at: string;
 };
 
+/**
+ * 保存前の形（id と日時を除いたもの）。
+ *
+ * `Omit<T, K>` は union に分配されないため、そのまま書くと ES のように
+ * discriminated union なモデルで「片方の枝にしかないキー」（character_limit など）が
+ * 落ちてしまう。`T extends unknown` を挟んで枝ごとに Omit する。
+ */
+type NewEntity<T> = T extends unknown ? Omit<T, keyof StoredEntity> : never;
+
 /** 自己PR・志望動機のように「タイトル + 本文」で表せる結果 */
 export type ToolResultModel = StoredEntity & {
   title: string;
@@ -37,14 +46,16 @@ export function createLocalStore<T extends StoredEntity>(storageKey: string) {
       return readAll().find((item) => item.id === id);
     },
 
-    insert(data: Omit<T, keyof StoredEntity>): T {
+    insert(data: NewEntity<T>): T {
       const now = new Date().toISOString();
+      // NewEntity<T> は union を枝ごとに Omit した型なので、
+      // 日時と id を足しても TS は T と同一だと判断できない。unknown を挟む
       const created = {
         ...data,
         id: crypto.randomUUID(),
         created_at: now,
         updated_at: now,
-      } as T;
+      } as unknown as T;
       writeAll([...readAll(), created]);
       return created;
     },

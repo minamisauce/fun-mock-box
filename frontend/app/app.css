@@ -16,7 +16,22 @@
     "Noto Sans JP", "Hiragino Sans", Meiryo, ui-sans-serif, system-ui,
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
-  /* ---------- color ---------- */
+  /* ---------- color ----------
+   * 色は3層に分ける。コンポーネントが直接使うのは 2層目と3層目だけで、
+   * 1層目（生の色名）をそのままクラスで書かない。
+   *
+   *   1. primitive … 色の実体。役割を名乗らない
+   *   2. semantic  … ツールに依存しない固定の役割（brand / danger）
+   *   3. contextual… 「今いる面の主役色」= primary。ただ1つだけ存在し、
+   *                  中身は [data-tool] のスコープで差し替わる（下の定義を参照）
+   *
+   * どれを使うかの判断は「この画面はツールの中か、外か」の一問に落ちる。
+   *   ツールの中（ボタン・進行・選択状態）      → primary / primary-soft
+   *   どのツールでもない面（ホーム・BottomNav）→ brand
+   *   ツールに関係なく意味が固定のもの（エラー）→ danger
+   */
+
+  /* --- 1. primitive --- */
   --color-white: #ffffff;
   --color-black: #333333; /* 本番同様、純黒ではない */
   --color-font-gray: #999999;
@@ -26,31 +41,55 @@
   --color-gray-2: #f5f5f5;
   --color-gray-3: #e9e9e9;
   --color-light-blue: #0095f6;
+  --color-red-50: #f74944;
+  --color-red-90: #feedec;
 
-  /* サービス全体のブランドカラー。ヘッダーなど「どのツールでもない」面に使う。
-   * 値は自己PRと同じだが役割が違うので別トークンにする
-   * （出典: shukatsu-box の theme.colors.primary.purple） */
-  --color-primary-purple: #5557e4;
-
-  /* ツール別ブランドカラー。新ツールを足すときはここに1行追加する */
-  --color-primary-red: #f74944;
-  --color-primary-self-promotion: #5557e4; /* 自己PR = パープル */
-  --color-primary-motivation: #00bdc0; /* 志望動機 = ターコイズ */
-  --color-primary-entry-sheet: #88c713; /* ES = イエローグリーン */
-
-  /* ツール色の淡色（選択中カードの背景など）。
-   * 志望動機は Design System の gradient-for-motivation-induction 由来、
-   * ES は gradient-for-entry-sheet-main-visual 由来。 */
-  --color-motivation-90: #ccf5f6;
-  --color-entry-sheet-90: #f3f9ec;
+  /* Toast（Design System node 135:388）の success / info。
+   * DS 上は green / blue だが、緑は ES のツール色 green-50(#88c713) と
+   * 別系統なので emerald、青は light-blue(#0095f6) と別物なので blue とした */
+  --color-emerald-50: #06c755;
+  --color-emerald-90: #f6fffa;
+  --color-blue-50: #3d5afe;
+  --color-blue-90: #eaf2ff;
 
   /* purple スケール（5 が最濃 / 90 が最淡）。自己PRで使う範囲のみ移植 */
   --color-purple-5: #222563;
   --color-purple-10: #34368c;
   --color-purple-30: #5559b3;
+  --color-purple-50: #5557e4;
   --color-purple-70: #d0d3f3;
   --color-purple-80: #e3e5f8;
   --color-purple-90: #edefff;
+
+  /* 志望動機 / ES の淡色は Design System のグラデーション
+   * （gradient-for-motivation-induction / -entry-sheet-main-visual）由来 */
+  --color-turquoise-50: #00bdc0;
+  --color-turquoise-90: #ccf5f6;
+  --color-green-50: #88c713;
+  --color-green-90: #f3f9ec;
+
+  /* --- 2. semantic --- */
+  /* サービス全体のブランドカラー。ヘッダーなど「どのツールでもない」面に使う。
+   * 自己PRのツール色と値は同じだが役割が違うので、同じ primitive を別名で参照する
+   * （出典: shukatsu-box の theme.colors.primary.purple） */
+  --color-brand: var(--color-purple-50);
+  /* バリデーションエラー・必須マーク。ツール色とは無関係に常にこの赤 */
+  --color-danger: var(--color-red-50);
+  --color-danger-soft: var(--color-red-90);
+  --color-success: var(--color-emerald-50);
+  --color-success-soft: var(--color-emerald-90);
+  --color-info: var(--color-blue-50);
+  --color-info-soft: var(--color-blue-90);
+  /* 警告はブランド色を使う（Design System の Toast / Status=Warning の指定）。
+   * 淡色は DS の #eeeefc に対し purple-90(#edefff) で代用している（目視で同色） */
+  --color-warning: var(--color-brand);
+  --color-warning-soft: var(--color-purple-90);
+
+  /* --- 3. contextual --- */
+  /* ツール画面の外（ホーム・履歴）ではブランド色が主役になる。
+   * ツール配下では下の [data-tool] が勝つ */
+  --color-primary: var(--color-brand);
+  --color-primary-soft: var(--color-purple-90);
 
   /* ---------- spacing（意味論トークン） ----------
    * v4 デフォルトの動的スペーシング（--spacing: 0.25rem から計算される p-4 等）
@@ -121,6 +160,34 @@
    * 衝突しない固有名にする。ツール画面のスマホ固定幅 = w-tool。 */
   --container-tool: 375px;
   --container-pc-min: 960px;
+}
+
+/* ==========================================================================
+ * ツール色のスコープ
+ *
+ * `data-tool` が付いた要素の配下では primary の中身が入れ替わる。これにより
+ * コンポーネントは自分がどのツールに居るかを知らずに `bg-primary` と書ける
+ * （ツール色を props で配って回る必要がない）。
+ *
+ * 付ける場所は各ツールの layout に1回だけ。ホームのように3ツールを並べる画面では
+ * カード単位で付けてよい。新ツールを足すときはここに1ブロック追加する。
+ *
+ * ⚠ 付け忘れても既定の brand 色で描画されてエラーにならない。ツール画面は
+ *   必ず ToolScope を通し、data-tool を手書きしないこと。
+ * ========================================================================== */
+[data-tool='self-promotion'] {
+  --color-primary: var(--color-purple-50);
+  --color-primary-soft: var(--color-purple-90);
+}
+
+[data-tool='motivation'] {
+  --color-primary: var(--color-turquoise-50);
+  --color-primary-soft: var(--color-turquoise-90);
+}
+
+[data-tool='entry-sheet'] {
+  --color-primary: var(--color-green-50);
+  --color-primary-soft: var(--color-green-90);
 }
 
 /* ==========================================================================

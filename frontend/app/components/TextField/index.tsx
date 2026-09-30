@@ -83,15 +83,13 @@ export function TextField({
         className={cn(
           'w-full rounded-md border bg-white px-md py-sm text-sm leading-md',
           'placeholder:text-font-gray focus:outline-none',
-          errorMessage
-            ? 'border-primary-red'
-            : 'border-border-2 focus:border-black',
+          errorMessage ? 'border-danger' : 'border-border-2 focus:border-black',
         )}
       />
       {errorMessage && (
         <span
           id={id ? `${id}-error` : undefined}
-          className='text-xs text-primary-red'
+          className='text-xs text-danger'
         >
           {errorMessage}
         </span>

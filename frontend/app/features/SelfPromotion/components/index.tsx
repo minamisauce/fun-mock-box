@@ -1,6 +1,7 @@
 import { ArrowLeftRight, Dumbbell, Smile, UsersRound } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { ConsentNotice } from '~/components/ConsentNotice';
 import {
   difficulty,
   STRENGTH_OPTIONS,
@@ -16,10 +17,8 @@ import { SelectStep } from '~/features/ToolWizard/SelectStep';
 import { TextStep } from '~/features/ToolWizard/TextStep';
 import type { StepComponentProps } from '~/features/ToolWizard/types';
 import { paths } from '~/lib/paths';
-import { TOOL_THEME } from '~/lib/toolTheme';
 import type { CreateSelfPromotionRequest } from '~/types/selfPromotion';
 
-const theme = TOOL_THEME['self-promotion'];
 const OTHER_VALUE = '__other__';
 
 /**
@@ -68,7 +67,6 @@ export function SelectStrength({ label, handleNextStep }: StepComponentProps) {
       label={label}
       options={strengthOptions}
       onSelect={handleSelect}
-      theme={theme}
     />
   );
 }
@@ -97,7 +95,6 @@ function createTextStep(
         onNext={handleNextStep}
         nextText={nextText}
         isSubmitting={isSubmitting}
-        theme={theme}
       />
     );
   };
@@ -118,9 +115,33 @@ export const SelectDifficulty = createTextStep(
   '例）メンバーとの意見の違い',
   difficulty,
 );
-export const SelectSolution = createTextStep(
-  'solution',
-  '例）部員同士の話し合い',
-  solution,
-  '自己PRを作成する',
-);
+/**
+ * 最終ステップ。生成AIへの送信に同意するまで作成ボタンを押せない。
+ * Figma: 自己PRツール node 3578:22404（consent ブロック）
+ */
+export function SelectSolution({
+  label,
+  handleNextStep,
+  isSubmitting,
+}: StepComponentProps) {
+  const { values, setValue } = useSelfPromotionForm();
+  const [agreed, setAgreed] = useState(false);
+
+  return (
+    <TextStep
+      label={label}
+      value={values.solution ?? ''}
+      onChange={(next) => setValue('solution', next)}
+      placeholder='例）部員同士の話し合い'
+      candidates={solution}
+      suggestMaxCount={SuggestMaxCount}
+      onNext={handleNextStep}
+      nextText='自己PRを作成する'
+      isSubmitting={isSubmitting}
+      beforeAction={
+        <ConsentNotice toolName='自己PR' agreed={agreed} onChange={setAgreed} />
+      }
+      disabled={!agreed}
+    />
+  );
+}

@@ -17,16 +17,16 @@ export function ErrorNotice({ message, onRetry, className }: Props) {
     <div
       role='alert'
       className={cn(
-        'flex flex-col items-start gap-xs rounded-md border border-primary-red bg-white p-sm',
+        'flex flex-col items-start gap-xs rounded-md border border-danger bg-white p-sm',
         className,
       )}
     >
-      <p className='text-xs leading-md text-primary-red'>{message}</p>
+      <p className='text-xs leading-md text-danger'>{message}</p>
       {onRetry && (
         <button
           type='button'
           onClick={onRetry}
-          className='text-xs font-bold text-primary-red underline hover:opacity-60'
+          className='text-xs font-bold text-danger underline hover:opacity-60'
         >
           再読み込み
         </button>

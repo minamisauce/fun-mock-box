@@ -1,8 +1,7 @@
-import { ImageUp } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Button } from '~/components/Button';
-import { ImageFields } from '~/features/EntrySheet/components/ImageFields';
+import { useEffect, useState } from 'react';
+import { ConsentNotice } from '~/components/ConsentNotice';
+import { ImageImportFlow } from '~/features/EntrySheet/components/ImageImportFlow';
+import { ImageImportEntry } from '~/features/EntrySheet/components/InputModeEntry';
 import {
   ENTRY_SHEETS_COMPANY_NAME_MAX_LENGTH,
   ENTRY_SHEETS_COMPANY_NAME_SUGGESTIONS,
@@ -11,15 +10,9 @@ import {
   ENTRY_SHEETS_QUESTION_OPTIONS,
   ENTRY_SHEETS_TEXT,
 } from '~/features/EntrySheet/constants';
-import { ReviewStepIdEnum } from '~/features/EntrySheet/constants/stepIds';
 import { useEntrySheetReviewForm } from '~/features/EntrySheet/hooks/useEntrySheetReviewForm';
-import { useImageUpload } from '~/features/EntrySheet/hooks/useImageUpload';
 import { TextStep } from '~/features/ToolWizard/TextStep';
 import type { StepComponentProps } from '~/features/ToolWizard/types';
-import { paths } from '~/lib/paths';
-import { TOOL_THEME } from '~/lib/toolTheme';
-
-const theme = TOOL_THEME['entry-sheet'];
 
 /**
  * 1問目。企業名ステップと同じ「自由入力 + 記入候補チップ」。
@@ -27,84 +20,66 @@ const theme = TOOL_THEME['entry-sheet'];
  * 画像からの一括入力もここに置く。1画面フォームではタブだったが、
  * ウィザードにタブの居場所が無いので最初のステップに添える。
  */
-export function InputQuestion({ label, handleNextStep }: StepComponentProps) {
+export function InputQuestion({
+  label,
+  handleNextStep,
+  handleSubmit,
+  isSubmitting,
+}: StepComponentProps) {
   const { values, setValue } = useEntrySheetReviewForm();
-  const navigate = useNavigate();
   const [isImageMode, setIsImageMode] = useState(false);
+  // 画像から確定したことを次のレンダーへ持ち越すフラグ。
+  // setValue は同じイベントの中では反映されないので、その場で handleSubmit を
+  // 呼ぶと更新前の値で送信されてしまう
+  const [readyToSubmit, setReadyToSubmit] = useState(false);
 
-  const image = useImageUpload({
-    onExtracted: (result) => {
-      setValue('original_content', result.content);
-      if (result.question) setValue('question', result.question);
-      if (result.company_name) setValue('company_name', result.company_name);
-
-      // 読み取れなかった項目があるステップより先へは進めない
-      // （進めても requiredParams のガードで先頭へ戻される）
-      if (!result.question) {
-        setIsImageMode(false);
-        return;
-      }
-      navigate(
-        paths.entrySheetsReviewNewStep(
-          result.company_name
-            ? ReviewStepIdEnum.CONTENT
-            : ReviewStepIdEnum.COMPANY_NAME,
-        ),
-      );
-    },
-  });
+  useEffect(() => {
+    if (!readyToSubmit) return;
+    setReadyToSubmit(false);
+    handleSubmit?.();
+  }, [readyToSubmit, handleSubmit]);
 
   if (isImageMode) {
     return (
       <div className='flex flex-col gap-xl'>
-        <h2 className='text-lg font-bold leading-md'>ESの画像から一括入力</h2>
-        <ImageFields
-          preview={image.preview}
-          fileName={image.fileName}
-          error={image.error}
-          isExtracting={image.isExtracting}
-          fileInputRef={image.fileInputRef}
-          cameraInputRef={image.cameraInputRef}
-          onSelectFile={image.selectFile}
-          onCaptureCamera={image.captureCamera}
-          onFileChange={image.handleFile}
-          onRemove={image.removeImage}
-        />
-        <Button
-          text='手で入力する'
-          variant='outline'
-          theme={theme}
-          onClick={() => {
-            image.removeImage();
-            setIsImageMode(false);
+        <h2 className='text-lg font-bold leading-md'>画像から一括入力</h2>
+        <ImageImportFlow
+          contentMaxLength={ENTRY_SHEETS_ORIGINAL_CONTENT_MAX_LENGTH}
+          contentLabel={ENTRY_SHEETS_TEXT.originalContent.label}
+          contentPlaceholder={ENTRY_SHEETS_TEXT.originalContent.placeholder}
+          confirmLabel='ESを添削する'
+          isSubmitting={isSubmitting}
+          onConfirm={(imported) => {
+            setValue('question', imported.question);
+            setValue('company_name', imported.company_name);
+            setValue('original_content', imported.content);
+
+            // この画面で全項目が揃うので、残りのステップは踏まずに送信する
+            setReadyToSubmit(true);
           }}
-          disabled={image.isExtracting}
+          onCancel={() => setIsImageMode(false)}
         />
       </div>
     );
   }
 
   return (
-    <div className='flex flex-col gap-xl'>
-      <TextStep
-        label={label}
-        value={values.question ?? ''}
-        onChange={(next) => setValue('question', next)}
-        placeholder={ENTRY_SHEETS_TEXT.question.placeholder}
-        candidates={ENTRY_SHEETS_QUESTION_OPTIONS}
-        suggestMaxCount={ENTRY_SHEETS_QUESTION_OPTIONS.length}
-        maxLength={ENTRY_SHEETS_QUESTION_MAX_LENGTH}
-        onNext={handleNextStep}
-        theme={theme}
-      />
-      <Button
-        text='ESの画像から一括入力'
-        variant='outline'
-        theme={theme}
-        beforeIcon={<ImageUp size={16} aria-hidden />}
-        onClick={() => setIsImageMode(true)}
-      />
-    </div>
+    <TextStep
+      label={label}
+      value={values.question ?? ''}
+      onChange={(next) => setValue('question', next)}
+      placeholder={ENTRY_SHEETS_TEXT.question.placeholder}
+      candidates={ENTRY_SHEETS_QUESTION_OPTIONS}
+      suggestMaxCount={ENTRY_SHEETS_QUESTION_OPTIONS.length}
+      maxLength={ENTRY_SHEETS_QUESTION_MAX_LENGTH}
+      onNext={handleNextStep}
+      beforeAction={
+        <ImageImportEntry
+          contentLabel='本文'
+          onClick={() => setIsImageMode(true)}
+        />
+      }
+    />
   );
 }
 
@@ -124,14 +99,13 @@ export function InputCompanyName({
       suggestMaxCount={ENTRY_SHEETS_COMPANY_NAME_SUGGESTIONS.length}
       maxLength={ENTRY_SHEETS_COMPANY_NAME_MAX_LENGTH}
       onNext={handleNextStep}
-      theme={theme}
     />
   );
 }
 
 /**
- * 最終ステップ。自己PR・志望動機の最終ステップと同じ素の TextStep。
- * 注意事項への同意は取らない（他2ツールのウィザードも取っていない）。
+ * 最終ステップ。自己PR・志望動機と同じく、生成AIへの送信に同意するまで
+ * 添削ボタンを押せない。Figma: 自己PRツール node 3578:22404
  */
 export function InputContent({
   label,
@@ -139,6 +113,7 @@ export function InputContent({
   isSubmitting,
 }: StepComponentProps) {
   const { values, setValue } = useEntrySheetReviewForm();
+  const [agreed, setAgreed] = useState(false);
 
   return (
     <TextStep
@@ -151,7 +126,10 @@ export function InputContent({
       onNext={handleNextStep}
       nextText='ESを添削する'
       isSubmitting={isSubmitting}
-      theme={theme}
+      beforeAction={
+        <ConsentNotice toolName='ES' agreed={agreed} onChange={setAgreed} />
+      }
+      disabled={!agreed}
     />
   );
 }

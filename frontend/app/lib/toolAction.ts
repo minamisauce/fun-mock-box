@@ -5,7 +5,7 @@ import {
   type LucideIcon,
   Megaphone,
 } from 'lucide-react';
-import type { ToolId } from './toolTheme';
+import type { ToolId } from './toolScope';
 
 /**
  * 画面上の「用途」。ツール（= 色の単位）とは1対1ではない。
@@ -13,7 +13,7 @@ import type { ToolId } from './toolTheme';
  * ES は作成と添削で入口を分けているため、entry-sheet ツールに2つの用途が
  * ぶら下がる。ホームのカードと作成履歴の行はどちらも用途の単位なので、
  * ラベルとアイコンをここ1箇所に置いて両者がズレないようにする。
- * 色は用途ではなくツールの属性なので toolTheme が持つ。
+ * 色は用途ではなくツールの属性なので、toolId から toolScope が引き当てる。
  */
 export type ToolActionId =
   | 'self-promotion'
@@ -22,7 +22,7 @@ export type ToolActionId =
   | 'entry-sheet-review';
 
 export type ToolAction = {
-  /** 色を引くためのツール。TOOL_THEME のキー */
+  /** 色を引くためのツール。toolScope() に渡す */
   toolId: ToolId;
   /** 作成履歴のラベル、アイコンの代替テキスト */
   label: string;

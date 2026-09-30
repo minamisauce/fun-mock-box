@@ -1,11 +1,11 @@
 import { RotateCcw, Sparkles } from 'lucide-react';
-import { type ReactNode, useCallback, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Button } from '~/components/Button';
+import { ConsentNotice } from '~/components/ConsentNotice';
 import { SuggestField } from '~/components/SuggestField';
 import { Tabs } from '~/components/Tabs';
 import { TextArea } from '~/components/TextArea';
 import { ImageFields } from '~/features/EntrySheet/components/ImageFields';
-import { NoticeDisclosure } from '~/features/EntrySheet/components/NoticeDisclosure';
 import {
   ENTRY_SHEETS_CHARACTER_LIMIT_OPTIONS,
   ENTRY_SHEETS_COMPANY_NAME_MAX_LENGTH,
@@ -17,11 +17,7 @@ import {
   ENTRY_SHEETS_TEXT,
 } from '~/features/EntrySheet/constants';
 import { useImageUpload } from '~/features/EntrySheet/hooks/useImageUpload';
-import { cn } from '~/lib/cn';
-import { TOOL_THEME } from '~/lib/toolTheme';
 import type { EntrySheetType, ExtractedEntrySheet } from '~/types/entrySheet';
-
-const theme = TOOL_THEME['entry-sheet'];
 
 /**
  * タブは「どう入力するか」の1段だけ（Figma node 3302:3937 と同じ）。
@@ -57,13 +53,7 @@ type Props = {
 /** 画像から自動入力された項目に付ける印 */
 function AutoFilledBadge() {
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-3xs rounded-infinity px-xs py-3xs text-xxs',
-        theme.bgSoft,
-        theme.text,
-      )}
-    >
+    <span className='inline-flex items-center gap-3xs rounded-infinity bg-primary-soft px-xs py-3xs text-xxs text-primary'>
       <Sparkles size={10} aria-hidden />
       画像から自動入力
     </span>
@@ -96,7 +86,7 @@ function FormGroup({
         >
           {label}
           {required && (
-            <span className='font-normal text-primary-red' aria-hidden>
+            <span className='font-normal text-danger' aria-hidden>
               *
             </span>
           )}
@@ -188,7 +178,15 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
     [mainField],
   );
 
-  const image = useImageUpload({ onExtracted: handleExtracted });
+  const image = useImageUpload();
+
+  // useImageUpload は読み取り結果を state に置くだけなので、ここで拾って
+  // フォームへ流し込む。ウィザードと違い、この画面は確認を挟まず入力欄が埋まる
+  const extracted = image.extracted;
+  useEffect(() => {
+    if (!extracted) return;
+    handleExtracted(extracted);
+  }, [extracted, handleExtracted]);
 
   const handleRestartImage = () => {
     image.removeImage();
@@ -323,7 +321,9 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
 
   const submitArea = (
     <>
-      <NoticeDisclosure
+      <ConsentNotice
+        id='es-agreed'
+        toolName='ES'
         agreed={agreed}
         onChange={(next) => {
           setAgreed(next);
@@ -333,7 +333,6 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
       />
       <Button
         text={isCreate ? '作成' : '添削'}
-        theme={theme}
         onClick={handleSubmit}
         disabled={image.isExtracting}
         isPending={isSubmitting}
@@ -356,7 +355,6 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
           <Button
             text='最初からやり直す'
             variant='outline'
-            theme={theme}
             beforeIcon={<RotateCcw size={16} aria-hidden />}
             onClick={handleRestartImage}
           />
@@ -370,9 +368,7 @@ export function EntrySheetForm({ mode, isSubmitting, onSubmit }: Props) {
           error={image.error}
           isExtracting={image.isExtracting}
           fileInputRef={image.fileInputRef}
-          cameraInputRef={image.cameraInputRef}
           onSelectFile={image.selectFile}
-          onCaptureCamera={image.captureCamera}
           onFileChange={image.handleFile}
           onRemove={image.removeImage}
         />

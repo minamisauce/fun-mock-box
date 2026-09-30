@@ -1,7 +1,7 @@
+import type { ReactNode } from 'react';
 import { Button } from '~/components/Button';
 import { SuggestChips } from '~/components/SuggestChips';
 import { TextArea } from '~/components/TextArea';
-import type { ToolTheme } from '~/lib/toolTheme';
 
 type Props = {
   label: string;
@@ -18,7 +18,13 @@ type Props = {
   /** 最終ステップでは「次へ」ではなく生成ボタンにする */
   nextText?: string;
   isSubmitting?: boolean;
-  theme: ToolTheme;
+  /**
+   * 入力欄とボタンの間に差し込む要素。
+   * 最終ステップの同意チェックや、ES1問目の画像入力への導線が入る。
+   */
+  beforeAction?: ReactNode;
+  /** 入力が埋まっていても押させたくないとき（同意が未チェックなど） */
+  disabled?: boolean;
 };
 
 /**
@@ -37,7 +43,8 @@ export function TextStep({
   onNext,
   nextText = '次へ',
   isSubmitting = false,
-  theme,
+  beforeAction,
+  disabled = false,
 }: Props) {
   const isEmpty = value.trim().length === 0;
 
@@ -63,12 +70,13 @@ export function TextStep({
         )}
       </div>
 
+      {beforeAction}
+
       <Button
         text={nextText}
         onClick={onNext}
-        disabled={isEmpty}
+        disabled={isEmpty || disabled}
         isPending={isSubmitting}
-        theme={theme}
       />
     </div>
   );

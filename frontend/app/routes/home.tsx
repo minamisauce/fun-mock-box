@@ -6,11 +6,11 @@ import { useCreationHistory } from '~/features/CreationHistory/useCreationHistor
 import { cn } from '~/lib/cn';
 import { paths } from '~/lib/paths';
 import { TOOL_ACTION, type ToolActionId } from '~/lib/toolAction';
-import { TOOL_THEME } from '~/lib/toolTheme';
+import { toolScope } from '~/lib/toolScope';
 
 export function meta() {
   return [
-    { title: '就活BOX ツールモック | fun-mock-box' },
+    { title: 'fun-mock-boxモック | fun-mock-box' },
     {
       name: 'description',
       content: '自己PR・志望動機・ES作成ツールのモック',
@@ -61,15 +61,17 @@ const RECENT_LIMIT = 1;
  * ツール色は左のアイコンタイル（淡色の面 + ツール色のアイコン）だけで表し、
  * 枠線は border-border-2 に統一する。カードごとに枠の色が変わると
  * 3枚並んだときに主張が強すぎて、どれが押せるのかが読みにくくなるため。
+ *
+ * ここは1画面に3ツールが並ぶので、ツール色のスコープはカード単位で開く。
  */
 function ToolCardView({ tool }: { tool: ToolCard }) {
   const action = TOOL_ACTION[tool.actionId];
-  const theme = TOOL_THEME[action.toolId];
   const Icon = action.icon;
   const enabled = tool.to !== null;
 
   return (
     <div
+      {...toolScope(action.toolId)}
       className={cn(
         'flex items-center gap-md rounded-lg border border-border-2 p-md transition-shadow',
         enabled ? 'bg-white hover:shadow-all-sides' : 'bg-gray-1',
@@ -79,10 +81,13 @@ function ToolCardView({ tool }: { tool: ToolCard }) {
         aria-hidden
         className={cn(
           'flex size-12 shrink-0 items-center justify-center rounded-xl',
-          enabled ? theme.bgSoft : 'bg-gray-2',
+          enabled ? 'bg-primary-soft' : 'bg-gray-2',
         )}
       >
-        <Icon size={24} className={enabled ? theme.text : 'text-font-gray'} />
+        <Icon
+          size={24}
+          className={enabled ? 'text-primary' : 'text-font-gray'}
+        />
       </span>
 
       <div className='flex min-w-px flex-1 flex-col gap-3xs'>
@@ -106,7 +111,7 @@ export default function Home() {
   return (
     <>
       {/* ブランド色のヘッダー → グレーの地 → 白いカード、の3層で奥行きを作る */}
-      <PageHeader title='就活BOX ツール' variant='brand' />
+      <PageHeader title='fun mock box' variant='brand' />
 
       <div className='flex flex-col gap-xxl px-md py-xl'>
         {/* 取得中・失敗も含めて、見せるものがあるときだけ節を出す。

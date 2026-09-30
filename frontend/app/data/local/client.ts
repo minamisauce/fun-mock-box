@@ -76,6 +76,7 @@ export function createLocalClient(): DataClient {
           type: 'CREATE',
           question: req.question,
           company_name: req.company_name,
+          character_limit: req.character_limit,
           content,
           ai_explanation_schema_version: 'CREATE_V1',
           ai_explanation_json,
