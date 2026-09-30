@@ -1,3 +1,4 @@
+import { PageHeader } from '~/components/PageHeader';
 import { CreationHistoryList } from '~/features/CreationHistory/CreationHistoryList';
 import { useCreationHistory } from '~/features/CreationHistory/useCreationHistory';
 
@@ -15,18 +16,19 @@ export default function History() {
   const { data, error, isLoading, refetch } = useCreationHistory();
 
   return (
-    <div className='flex flex-col gap-xl px-md py-xxl'>
-      <header className='flex flex-col gap-xs'>
-        <h1 className='text-lg font-bold leading-sm'>作成履歴</h1>
-      </header>
+    <>
+      {/* 下層ページなので帯にしない。色帯はホームだけに絞る */}
+      <PageHeader title='作成履歴' />
 
-      <CreationHistoryList
-        items={data ?? []}
-        isLoading={isLoading}
-        error={error}
-        onRetry={refetch}
-        emptyMessage='まだ作成した文章はありません。ホームからツールを選んで作成してみましょう。'
-      />
-    </div>
+      <div className='flex flex-col gap-xl px-md py-xl'>
+        <CreationHistoryList
+          items={data ?? []}
+          isLoading={isLoading}
+          error={error}
+          onRetry={refetch}
+          emptyMessage='まだ作成した文章はありません。ホームからツールを選んで作成してみましょう。'
+        />
+      </div>
+    </>
   );
 }

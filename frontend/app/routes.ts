@@ -33,10 +33,13 @@ export default [
     ]),
   ]),
 
-  // ES はウィザードではなく1画面フォーム。作成/添削の2モードで URL が分かれる
+  // ES は作成が1画面フォーム、添削がウィザードで入力方式が分かれる
   ...prefix('entry-sheets', [
     route('new', 'routes/entry-sheet/create.tsx'),
-    route('review/new', 'routes/entry-sheet/review.tsx'),
+    layout('routes/entry-sheet/review-layout.tsx', [
+      route('review/new', 'routes/entry-sheet/review-index.tsx'),
+      route('review/new/:step', 'routes/entry-sheet/review-step.tsx'),
+    ]),
     route(':id', 'routes/entry-sheet/result.tsx'),
   ]),
 ] satisfies RouteConfig;

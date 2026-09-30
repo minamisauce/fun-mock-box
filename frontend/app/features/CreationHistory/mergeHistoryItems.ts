@@ -18,7 +18,7 @@ export function mergeHistoryItems(
   return [
     ...selfPromotions.map((item) => ({
       id: item.id,
-      toolId: 'self-promotion' as const,
+      actionId: 'self-promotion' as const,
       href: paths.selfPromotion(item.id),
       heading: item.title,
       content: item.content,
@@ -27,7 +27,7 @@ export function mergeHistoryItems(
     })),
     ...motivations.map((item) => ({
       id: item.id,
-      toolId: 'motivation' as const,
+      actionId: 'motivation' as const,
       href: paths.motivation(item.id),
       heading: item.title,
       content: item.content,
@@ -36,7 +36,11 @@ export function mergeHistoryItems(
     })),
     ...entrySheets.map((item) => ({
       id: item.id,
-      toolId: 'entry-sheet' as const,
+      // 作成と添削は入口が分かれているので、履歴でも別ラベルで出す
+      actionId:
+        item.type === 'REVIEW'
+          ? ('entry-sheet-review' as const)
+          : ('entry-sheet-create' as const),
       href: paths.entrySheet(item.id),
       heading: `${item.company_name}／${item.question}`,
       content: item.content,

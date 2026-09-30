@@ -27,6 +27,11 @@
   --color-gray-3: #e9e9e9;
   --color-light-blue: #0095f6;
 
+  /* サービス全体のブランドカラー。ヘッダーなど「どのツールでもない」面に使う。
+   * 値は自己PRと同じだが役割が違うので別トークンにする
+   * （出典: shukatsu-box の theme.colors.primary.purple） */
+  --color-primary-purple: #5557e4;
+
   /* ツール別ブランドカラー。新ツールを足すときはここに1行追加する */
   --color-primary-red: #f74944;
   --color-primary-self-promotion: #5557e4; /* 自己PR = パープル */

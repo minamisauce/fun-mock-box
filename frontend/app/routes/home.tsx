@@ -1,11 +1,12 @@
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
+import { PageHeader } from '~/components/PageHeader';
 import { CreationHistoryList } from '~/features/CreationHistory/CreationHistoryList';
 import { useCreationHistory } from '~/features/CreationHistory/useCreationHistory';
 import { cn } from '~/lib/cn';
 import { paths } from '~/lib/paths';
-import { TOOL_ICON } from '~/lib/toolIcon';
-import { TOOL_THEME, type ToolId } from '~/lib/toolTheme';
+import { TOOL_ACTION, type ToolActionId } from '~/lib/toolAction';
+import { TOOL_THEME } from '~/lib/toolTheme';
 
 export function meta() {
   return [
@@ -18,27 +19,36 @@ export function meta() {
 }
 
 type ToolCard = {
-  id: ToolId;
+  actionId: ToolActionId;
   name: string;
   to: string | null;
 };
 
-// アイコンはここに持たない。作成履歴と同じ絵を使うため ~/lib/toolIcon に集約する
+/**
+ * ES は「これから書く」と「書いたものを直す」で入力も結果も別物なので、
+ * ツール内のタブではなくホームから入口を分ける。
+ * ラベルとアイコンは ~/lib/toolAction に集約（作成履歴と共通）。
+ */
 const TOOLS: ToolCard[] = [
   {
-    id: 'self-promotion',
+    actionId: 'self-promotion',
     name: '自己PR作成',
     to: paths.selfPromotionsNew,
   },
   {
-    id: 'motivation',
+    actionId: 'motivation',
     name: '志望動機作成',
     to: paths.motivationsNew,
   },
   {
-    id: 'entry-sheet',
-    name: 'ES作成・添削',
+    actionId: 'entry-sheet-create',
+    name: 'ES作成',
     to: paths.entrySheetsNew,
+  },
+  {
+    actionId: 'entry-sheet-review',
+    name: 'ES添削',
+    to: paths.entrySheetsReviewNew,
   },
 ];
 
@@ -53,8 +63,9 @@ const RECENT_LIMIT = 1;
  * 3枚並んだときに主張が強すぎて、どれが押せるのかが読みにくくなるため。
  */
 function ToolCardView({ tool }: { tool: ToolCard }) {
-  const theme = TOOL_THEME[tool.id];
-  const Icon = TOOL_ICON[tool.id];
+  const action = TOOL_ACTION[tool.actionId];
+  const theme = TOOL_THEME[action.toolId];
+  const Icon = action.icon;
   const enabled = tool.to !== null;
 
   return (
@@ -93,51 +104,52 @@ export default function Home() {
   const history = data ?? [];
 
   return (
-    <div className='flex flex-col gap-xxl px-md py-xxl'>
-      <header className='flex flex-col gap-xs'>
-        <h1 className='text-lg font-bold leading-sm'>就活BOX ツール</h1>
-      </header>
+    <>
+      {/* ブランド色のヘッダー → グレーの地 → 白いカード、の3層で奥行きを作る */}
+      <PageHeader title='就活BOX ツール' variant='brand' />
 
-      {/* 取得中・失敗も含めて、見せるものがあるときだけ節を出す。
-          ツールカードは取得を待たせない */}
-      {(isLoading || error || history.length > 0) && (
-        <section className='flex flex-col gap-sm'>
-          <div className='flex items-center justify-between gap-xs'>
-            <h2 className='text-md font-bold'>最近の作成履歴</h2>
-            {/* 件数に関わらず出す。ここが作成履歴ページへの主導線なので、
-                「あと1件だけ」のときに導線が消えると一覧へ行けなくなる */}
-            <Link
-              to={paths.history}
-              className='flex shrink-0 items-center gap-3xs text-xs text-font-gray hover:opacity-60'
-            >
-              すべて見る
-              <ChevronRight size={14} aria-hidden />
-            </Link>
-          </div>
+      <div className='flex flex-col gap-xxl px-md py-xl'>
+        {/* 取得中・失敗も含めて、見せるものがあるときだけ節を出す。
+            ツールカードは取得を待たせない */}
+        {(isLoading || error || history.length > 0) && (
+          <section className='flex flex-col gap-sm'>
+            <div className='flex items-center justify-between gap-xs'>
+              <h2 className='text-md font-bold'>最近の作成履歴</h2>
+              {/* 件数に関わらず出す。ここが作成履歴ページへの主導線なので、
+                  「あと1件だけ」のときに導線が消えると一覧へ行けなくなる */}
+              <Link
+                to={paths.history}
+                className='flex shrink-0 items-center gap-3xs text-xs text-font-gray hover:opacity-60'
+              >
+                すべて見る
+                <ChevronRight size={14} aria-hidden />
+              </Link>
+            </div>
 
-          <CreationHistoryList
-            items={history.slice(0, RECENT_LIMIT)}
-            isLoading={isLoading}
-            error={error}
-            onRetry={refetch}
-            skeletonRows={RECENT_LIMIT}
-          />
-        </section>
-      )}
-
-      <section className='flex flex-col gap-sm'>
-        <h2 className='text-md font-bold'>ツール一覧</h2>
-        {TOOLS.map((tool) =>
-          tool.to ? (
-            // hover の見た目はカード側（影）が持つので、ここでは透過させない
-            <Link key={tool.id} to={tool.to} className='block'>
-              <ToolCardView tool={tool} />
-            </Link>
-          ) : (
-            <ToolCardView key={tool.id} tool={tool} />
-          ),
+            <CreationHistoryList
+              items={history.slice(0, RECENT_LIMIT)}
+              isLoading={isLoading}
+              error={error}
+              onRetry={refetch}
+              skeletonRows={RECENT_LIMIT}
+            />
+          </section>
         )}
-      </section>
-    </div>
+
+        <section className='flex flex-col gap-sm'>
+          <h2 className='text-md font-bold'>ツール一覧</h2>
+          {TOOLS.map((tool) =>
+            tool.to ? (
+              // hover の見た目はカード側（影）が持つので、ここでは透過させない
+              <Link key={tool.actionId} to={tool.to} className='block'>
+                <ToolCardView tool={tool} />
+              </Link>
+            ) : (
+              <ToolCardView key={tool.actionId} tool={tool} />
+            ),
+          )}
+        </section>
+      </div>
+    </>
   );
 }

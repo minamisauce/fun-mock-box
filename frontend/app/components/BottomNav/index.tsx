@@ -31,7 +31,8 @@ export function BottomNav() {
               className={({ isActive }) =>
                 cn(
                   'flex flex-col items-center gap-3xs px-xs py-xs leading-none hover:opacity-60',
-                  isActive ? 'text-black' : 'text-font-gray',
+                  // アクティブはヘッダーと同じブランド色。上下のクロームを揃える
+                  isActive ? 'text-primary-purple' : 'text-font-gray',
                 )
               }
             >

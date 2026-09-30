@@ -8,9 +8,12 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
-  candidates: readonly string[];
+  /** 記入候補。省略するとチップ列ごと出さない（ES本文のような長文ステップ用） */
+  candidates?: readonly string[];
   suggestMaxCount?: number;
   maxLength?: number;
+  /** textarea の初期行数。長文を入れるステップでは増やす */
+  minRows?: number;
   onNext: () => void;
   /** 最終ステップでは「次へ」ではなく生成ボタンにする */
   nextText?: string;
@@ -30,6 +33,7 @@ export function TextStep({
   candidates,
   suggestMaxCount = 6,
   maxLength = 100,
+  minRows = 3,
   onNext,
   nextText = '次へ',
   isSubmitting = false,
@@ -48,13 +52,15 @@ export function TextStep({
           placeholder={placeholder}
           maxLength={maxLength}
           showCount
-          minRows={3}
+          minRows={minRows}
         />
-        <SuggestChips
-          candidates={candidates}
-          maxCount={suggestMaxCount}
-          onPick={onChange}
-        />
+        {candidates && candidates.length > 0 && (
+          <SuggestChips
+            candidates={candidates}
+            maxCount={suggestMaxCount}
+            onPick={onChange}
+          />
+        )}
       </div>
 
       <Button

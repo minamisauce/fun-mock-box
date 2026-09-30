@@ -1,4 +1,4 @@
-import type { ToolId } from '~/lib/toolTheme';
+import type { ToolActionId } from '~/lib/toolAction';
 
 /**
  * 3ツールの作成物を1本のリストに並べるための表示用の形。
@@ -8,7 +8,8 @@ import type { ToolId } from '~/lib/toolTheme';
  */
 export type HistoryItem = {
   id: string;
-  toolId: ToolId;
+  /** ES は作成と添削で用途が分かれる。ラベルとアイコンはここから引く */
+  actionId: ToolActionId;
   /** 結果ページへのリンク先 */
   href: string;
   heading: string;

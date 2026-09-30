@@ -57,7 +57,8 @@ export default function EntrySheetCreate() {
 
   return (
     <>
-      <ToolLayout title='ES作成・添削' onBack={() => navigate(paths.home)}>
+      {/* Figma の LIFF ヘッダー（node 3302:3967）に合わせた表記 */}
+      <ToolLayout title='ES対策ツール' onBack={() => navigate(paths.home)}>
         {create.error && (
           <ErrorNotice message={create.error.userMessage} className='mb-md' />
         )}

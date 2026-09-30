@@ -4,19 +4,9 @@ import { ErrorNotice } from '~/components/ErrorNotice';
 import type { DataError } from '~/data/errors';
 import { cn } from '~/lib/cn';
 import { formatDateTime } from '~/lib/formatDateTime';
-import { TOOL_ICON } from '~/lib/toolIcon';
-import { TOOL_THEME, type ToolId } from '~/lib/toolTheme';
+import { TOOL_ACTION } from '~/lib/toolAction';
+import { TOOL_THEME } from '~/lib/toolTheme';
 import type { HistoryItem } from './types';
-
-/**
- * どのツールの文章かを示すラベル。
- * 画面上はアイコンだけで示すので、読み上げ用の代替テキストとして使う。
- */
-const TOOL_LABEL: Record<ToolId, string> = {
-  'self-promotion': '自己PR',
-  motivation: '志望動機',
-  'entry-sheet': 'ES',
-};
 
 type Props = {
   items: HistoryItem[];
@@ -54,7 +44,8 @@ export function CreationHistoryList({
     return (
       <div className='flex flex-col gap-xs'>
         {skeletonKeys.map((key) => (
-          <div key={key} className='h-16 animate-pulse rounded-md bg-gray-2' />
+          // 地の面が bg-gray-2 なので、スケルトンは1段濃い gray-3 にする
+          <div key={key} className='h-16 animate-pulse rounded-lg bg-gray-3' />
         ))}
       </div>
     );
@@ -72,8 +63,9 @@ export function CreationHistoryList({
   return (
     <ul className='flex flex-col gap-xs'>
       {items.map((item) => {
-        const theme = TOOL_THEME[item.toolId];
-        const Icon = TOOL_ICON[item.toolId];
+        const action = TOOL_ACTION[item.actionId];
+        const theme = TOOL_THEME[action.toolId];
+        const Icon = action.icon;
         const updatedAt = formatDateTime(item.updated_at);
 
         return (
@@ -95,7 +87,7 @@ export function CreationHistoryList({
                 {/* 画面上はアイコンだけでツールを示すので、読み上げ用に名前を持たせる */}
                 <span
                   role='img'
-                  aria-label={TOOL_LABEL[item.toolId]}
+                  aria-label={action.label}
                   className={cn(
                     // ツール一覧と同じ角丸四角。台座は 48px → 32px なので、
                     // 半径も rounded-xl(16px) ではなく rounded-md(8px) に落とす

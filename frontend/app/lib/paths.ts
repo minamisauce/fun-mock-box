@@ -13,5 +13,7 @@ export const paths = {
 
   entrySheetsNew: '/entry-sheets/new',
   entrySheetsReviewNew: '/entry-sheets/review/new',
+  entrySheetsReviewNewStep: (step: string) =>
+    `/entry-sheets/review/new/${step}`,
   entrySheet: (id: string) => `/entry-sheets/${id}`,
 } as const;

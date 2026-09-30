@@ -53,10 +53,31 @@ describe('mergeHistoryItems', () => {
     );
 
     expect(merged.map((item) => item.id)).toEqual(['mo', 'es', 'sp']);
-    expect(merged.map((item) => item.toolId)).toEqual([
+    expect(merged.map((item) => item.actionId)).toEqual([
       'motivation',
-      'entry-sheet',
+      'entry-sheet-create',
       'self-promotion',
+    ]);
+  });
+
+  it('ES は type で作成と添削の用途を出し分ける', () => {
+    const merged = mergeHistoryItems(
+      [],
+      [],
+      [
+        entrySheet('create', '2026-09-02T00:00:00.000Z'),
+        {
+          ...entrySheet('review', '2026-09-01T00:00:00.000Z'),
+          type: 'REVIEW',
+          ai_explanation_schema_version: 'REVIEW_V1',
+          ai_explanation_json: [],
+        },
+      ],
+    );
+
+    expect(merged.map((item) => item.actionId)).toEqual([
+      'entry-sheet-create',
+      'entry-sheet-review',
     ]);
   });
 

@@ -7,12 +7,43 @@ export const ENTRY_SHEETS_COMPANY_NAME_MAX_LENGTH = 50;
 export const ENTRY_SHEETS_EPISODE_MAX_LENGTH = 1000;
 export const ENTRY_SHEETS_ORIGINAL_CONTENT_MAX_LENGTH = 1000;
 
-/** 質問の選択肢（選んでも自由入力でも可） */
+/** 質問の選択肢（選んでも自由入力でも可）。文言は Figma node 3302:4093 準拠 */
 export const ENTRY_SHEETS_QUESTION_OPTIONS = [
-  '自己PRを教えてください',
+  '自己PRをしてください',
   '学生時代に力を入れたこと',
   '当社を志望する理由を教えてください',
 ] as const;
+
+/**
+ * 入力欄のラベルとプレースホルダ。
+ * 出典: Figma「新しいESを作成」(node 3302:3937) /「ESを添削」(node 3302:3968)
+ */
+export const ENTRY_SHEETS_TEXT = {
+  question: {
+    label: 'ESの質問',
+    placeholder: 'あなたの強み・弱みを教えてください',
+  },
+  companyName: {
+    label: '提出する企業名',
+    placeholder: '指定しない',
+  },
+  characterLimit: {
+    label: '文字数を指定',
+    placeholder: '指定しない',
+    /** 入力欄の右に置く単位 */
+    suffix: '文字以内',
+  },
+  episode: {
+    label: '文章や必ず入れたいエピソード',
+    placeholder:
+      '短いキーワードを入力するだけで、AIが文章をきれいに仕上げます。',
+  },
+  originalContent: {
+    label: 'あなたのESを入力',
+    placeholder:
+      '作成済みのESを入力して下さい。AIがあなたの文章を自然で伝わりやすい形に整えます。',
+  },
+} as const;
 
 /** 文字数指定の選択肢 */
 export const ENTRY_SHEETS_CHARACTER_LIMIT_OPTIONS = [
