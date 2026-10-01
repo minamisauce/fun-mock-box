@@ -17,7 +17,6 @@ const toOptions = (values: readonly string[]) =>
   values.map((value) => ({ label: value, value }));
 
 const industryOptions = toOptions(industry);
-const reasonOptions = toOptions(reason);
 
 export function SelectIndustry({ label, handleNextStep }: StepComponentProps) {
   const { values, setValue } = useMotivationForm();
@@ -59,19 +58,16 @@ export function SelectSector({ label, handleNextStep }: StepComponentProps) {
 }
 
 export function SelectReason({ label, handleNextStep }: StepComponentProps) {
-  const { setValue } = useMotivationForm();
-
-  const handleSelect = (value: string) => {
-    setValue('reason', value);
-    handleNextStep();
-  };
+  const { values, setValue } = useMotivationForm();
 
   return (
-    <SelectStep
+    <TextStep
       label={label}
-      options={reasonOptions}
-      onSelect={handleSelect}
-      columns={1}
+      value={values.reason ?? ''}
+      onChange={(next) => setValue('reason', next)}
+      placeholder='例）プロフェッショナルとして成長したい'
+      candidates={reason}
+      onNext={handleNextStep}
     />
   );
 }

@@ -6,8 +6,12 @@ import { paths } from '~/lib/paths';
 /**
  * ホーム / 作成履歴を行き来するグローバルナビ。
  *
- * ツール画面（ToolLayout）には出さない。ウィザードの途中に別セクションへの
- * 導線があると、入力中の内容を捨てる操作が1タップで踏めてしまうため。
+ * ツール画面（ToolLayout）にも出す。入力中に押しても LeaveConfirmDialog が
+ * 遷移を止めるので、1タップで入力が消えることはない。
+ *
+ * アクティブ色は brand ではなく primary。ホーム・作成履歴では両者が同値なので
+ * 見た目は変わらず、ツール画面配下ではそのツールの色になる。ただしツール画面では
+ * ホームも作成履歴もアクティブにならないので、実際に色が出るのは前者だけ。
  *
  * ⚠ position: fixed にしない。sm 以上でフレーム（w-tool = 375px）を突き抜けて
  *    画面幅いっぱいに広がる。フレームの内側で sticky bottom-0 にして追従させる。
@@ -31,8 +35,8 @@ export function BottomNav() {
               className={({ isActive }) =>
                 cn(
                   'flex flex-col items-center gap-3xs px-xs py-xs leading-none hover:opacity-60',
-                  // アクティブはヘッダーと同じブランド色。上下のクロームを揃える
-                  isActive ? 'text-brand' : 'text-font-gray',
+                  // ツール配下では primary がそのツールの色に差し替わる
+                  isActive ? 'text-primary' : 'text-font-gray',
                 )
               }
             >

@@ -51,7 +51,8 @@ export function Toast({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 8 }}
           transition={{ duration: 0.2 }}
-          className='pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center pb-xl'
+          // ツール画面にも BottomNav があるので、その上に浮かせる
+          className='pointer-events-none fixed inset-x-0 bottom-bottom-nav z-50 flex justify-center pb-sm'
         >
           {/* ToolLayout と同じ 375px のカラムに収め、その内側で左右 16px を空ける。
               画面幅が広くてもトーストだけ広がらないようにするため */}

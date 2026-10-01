@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Button } from '~/components/Button';
 import { ErrorNotice } from '~/components/ErrorNotice';
+import { LeaveConfirmDialog } from '~/components/LeaveConfirmDialog';
 import { Tabs } from '~/components/Tabs';
 import { TextArea } from '~/components/TextArea';
 import { Toast } from '~/components/Toast';
@@ -153,7 +154,7 @@ function EntrySheetEditor({ item }: { item: EntrySheetModel }) {
   // 保存済みの本文。編集中かどうかの判定はこれと比べる
   const [saved, setSaved] = useState(item.content);
   const [content, setContent] = useState(item.content);
-  // 保存成功で出すトースト。null の間は出ない
+  // 更新成功で出すトースト。null の間は出ない
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('content');
 
@@ -235,7 +236,7 @@ function EntrySheetEditor({ item }: { item: EntrySheetModel }) {
 
               <div className='flex flex-col gap-sm'>
                 <Button
-                  text='保存する'
+                  text='更新する'
                   onClick={handleSave}
                   disabled={!isDirty}
                   isPending={save.isPending}
@@ -262,6 +263,12 @@ function EntrySheetEditor({ item }: { item: EntrySheetModel }) {
       </ToolLayout>
 
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+
+      {/* 未保存の編集がある間だけ。保存済みなら離れても失うものがないので出さない */}
+      <LeaveConfirmDialog
+        when={isDirty}
+        keepWithin={paths.entrySheet(item.id)}
+      />
     </>
   );
 }

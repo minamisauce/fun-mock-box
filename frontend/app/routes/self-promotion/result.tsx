@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Button } from '~/components/Button';
 import { ErrorNotice } from '~/components/ErrorNotice';
+import { LeaveConfirmDialog } from '~/components/LeaveConfirmDialog';
 import { TextArea } from '~/components/TextArea';
 import { Toast } from '~/components/Toast';
 import { ToolLayout } from '~/components/ToolLayout';
@@ -86,7 +87,7 @@ function SelfPromotionEditor({ item }: { item: SelfPromotionModel }) {
   });
   const [title, setTitle] = useState(item.title);
   const [content, setContent] = useState(item.content);
-  // 保存成功で出すトースト。null の間は出ない
+  // 更新成功で出すトースト。null の間は出ない
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const save = useAsyncAction((patch: UpdateSelfPromotionRequest) =>
@@ -139,7 +140,7 @@ function SelfPromotionEditor({ item }: { item: SelfPromotionModel }) {
 
           <div className='flex flex-col gap-sm'>
             <Button
-              text='保存する'
+              text='更新する'
               onClick={handleSave}
               disabled={!isDirty}
               isPending={save.isPending}
@@ -156,6 +157,12 @@ function SelfPromotionEditor({ item }: { item: SelfPromotionModel }) {
       </ToolLayout>
 
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+
+      {/* 未保存の編集がある間だけ。保存済みなら離れても失うものがないので出さない */}
+      <LeaveConfirmDialog
+        when={isDirty}
+        keepWithin={paths.selfPromotion(item.id)}
+      />
     </>
   );
 }

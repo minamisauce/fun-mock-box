@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ErrorNotice } from '~/components/ErrorNotice';
 import { GeneratingOverlay } from '~/components/GeneratingOverlay';
+import { LeaveConfirmDialog } from '~/components/LeaveConfirmDialog';
 import { ProgressBar } from '~/components/ProgressBar';
 import { ToolLayout } from '~/components/ToolLayout';
 import { dataClient } from '~/data';
@@ -26,7 +27,7 @@ export function meta() {
 
 export default function SelfPromotionNewStep() {
   const navigate = useNavigate();
-  const { values, toRequest, reset } = useSelfPromotionForm();
+  const { values, toRequest, reset, isDirty } = useSelfPromotionForm();
   // 生成成功後、結果画面へ移り終えるまでの状態。
   // isPending は生成が解決した時点で false に戻るので、これが無いと
   // reset() 直後に下のガードが走ってステップ1へ飛ばされる
@@ -119,6 +120,11 @@ export default function SelfPromotionNewStep() {
       </ToolLayout>
 
       <GeneratingOverlay isOpen={isSubmitting} messages={GENERATING_MESSAGES} />
+
+      <LeaveConfirmDialog
+        when={isDirty && !isSubmitting}
+        keepWithin={paths.selfPromotionsNew}
+      />
     </>
   );
 }

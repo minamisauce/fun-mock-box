@@ -1,3 +1,5 @@
+import { Check } from 'lucide-react';
+
 /**
  * Figma: 自己PRツール「大変だったことを解決するために何をしましたか？」の
  *        consent ブロック (node 3578:22404)
@@ -39,15 +41,27 @@ export function ConsentNotice({
   return (
     <div className='flex w-full flex-col items-center gap-md'>
       <label className='flex items-center gap-xs text-sm leading-md'>
-        <input
-          id={id}
-          type='checkbox'
-          checked={agreed}
-          aria-invalid={errorMessage ? true : undefined}
-          aria-describedby={errorMessage ? `${id}-error` : undefined}
-          onChange={(e) => onChange(e.target.checked)}
-          className='size-5 rounded-sm accent-primary'
-        />
+        {/* accent-color は「チェックの色」を指定できない。ブラウザが塗りの明度から
+            自動で決めるため、primary が明るいツール（ES=緑 / 志望動機=ターコイズ）
+            では黒いチェックになり、自己PR=紫だけ白になってツール間でばらつく。
+            色を固定する手段が他に無いので appearance-none にして自前で描く。 */}
+        <span className='relative inline-flex size-5 shrink-0'>
+          <input
+            id={id}
+            type='checkbox'
+            checked={agreed}
+            aria-invalid={errorMessage ? true : undefined}
+            aria-describedby={errorMessage ? `${id}-error` : undefined}
+            onChange={(e) => onChange(e.target.checked)}
+            className='peer size-5 appearance-none rounded-sm border border-border-1 bg-white transition-colors checked:border-primary checked:bg-primary'
+          />
+          {/* input の兄弟に置くこと。peer-checked はセレクタの都合で後ろの要素にしか効かない */}
+          <Check
+            size={14}
+            aria-hidden
+            className='pointer-events-none absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100'
+          />
+        </span>
         下記の内容に同意する
       </label>
 

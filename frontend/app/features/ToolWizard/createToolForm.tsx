@@ -23,6 +23,12 @@ export type ToolFormValue<TForm> = {
   reset: () => void;
   /** 必須項目がすべて埋まっていれば完成したリクエストを返す */
   toRequest: () => TForm | null;
+  /**
+   * 1つでも入力があれば true。離脱確認を出すかの判定に使う。
+   * 「必須が揃ったか」ではないので toRequest とは別物（1問目だけ埋めた状態も
+   * 失うものがあるため dirty に含める）。
+   */
+  isDirty: boolean;
 };
 
 export function createToolForm<
@@ -63,9 +69,14 @@ export function createToolForm<
       ) as TForm;
     }, [values]);
 
+    const isDirty = useMemo(
+      () => Object.values(values).some((value) => value?.trim()),
+      [values],
+    );
+
     const value = useMemo(
-      () => ({ values, setValue, reset, toRequest }),
-      [values, setValue, reset, toRequest],
+      () => ({ values, setValue, reset, toRequest, isDirty }),
+      [values, setValue, reset, toRequest, isDirty],
     );
 
     return <Context.Provider value={value}>{children}</Context.Provider>;

@@ -9,9 +9,12 @@ import { cn } from '~/lib/cn';
  * - enable:   bg = primary（= 居るツールの色）、文字 white
  * - hover:    bg white + primary のボーダー + primary の文字（反転する）
  * - disabled: bg gray-3 (#e9e9e9) + 文字 font-gray (#999)  ※透過ではない
+ *
+ * secondary は DS の button/Secondary（枠線グレー + 黒文字）。ツール色を持たない
+ * ので、ダイアログの「OK / キャンセル」のように等価な選択肢を並べる場所に使う。
  */
 
-type Variant = 'primary' | 'outline' | 'text';
+type Variant = 'primary' | 'secondary' | 'outline' | 'text';
 type Size = 'lg' | 'md' | 'sm';
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -28,6 +31,14 @@ const SIZE_CLASS: Record<Size, string> = {
   lg: 'p-md gap-none',
   md: 'px-md py-sm gap-none',
   sm: 'px-sm py-xs gap-xxs',
+};
+
+const VARIANT_CLASS: Record<Variant, string> = {
+  primary:
+    'bg-primary text-white hover:border-primary hover:bg-white hover:text-primary',
+  secondary: 'border-border-2 bg-white text-black hover:bg-gray-2',
+  outline: 'border-primary bg-white text-primary',
+  text: 'bg-transparent text-primary',
 };
 
 export function Button({
@@ -55,11 +66,7 @@ export function Button({
         fullWidth && 'w-full',
         isDisabled
           ? 'cursor-not-allowed bg-gray-3 text-font-gray'
-          : variant === 'primary'
-            ? 'bg-primary text-white hover:border-primary hover:bg-white hover:text-primary'
-            : variant === 'outline'
-              ? 'border-primary bg-white text-primary'
-              : 'bg-transparent text-primary',
+          : VARIANT_CLASS[variant],
         className,
       )}
       {...rest}
