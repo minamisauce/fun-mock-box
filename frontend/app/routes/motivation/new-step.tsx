@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ErrorNotice } from '~/components/ErrorNotice';
 import { GeneratingOverlay } from '~/components/GeneratingOverlay';
+import { LeaveConfirmDialog } from '~/components/LeaveConfirmDialog';
 import { ProgressBar } from '~/components/ProgressBar';
 import { ToolLayout } from '~/components/ToolLayout';
 import { dataClient } from '~/data';
@@ -12,7 +13,6 @@ import { useStepNavigation } from '~/features/ToolWizard/useStepNavigation';
 import { useAsyncAction } from '~/hooks/useAsyncAction';
 import { GENERATING_MIN_DURATION_MS, withMinimumDuration } from '~/lib/delay';
 import { paths } from '~/lib/paths';
-import { TOOL_THEME } from '~/lib/toolTheme';
 import type { CreateMotivationRequest } from '~/types/motivation';
 
 const GENERATING_MESSAGES = [
@@ -21,15 +21,13 @@ const GENERATING_MESSAGES = [
   '文章を作成しています…',
 ] as const;
 
-const theme = TOOL_THEME.motivation;
-
 export function meta() {
   return [{ title: '志望動機作成 | fun-mock-box' }];
 }
 
 export default function MotivationNewStep() {
   const navigate = useNavigate();
-  const { values, toRequest, reset } = useMotivationForm();
+  const { values, toRequest, reset, isDirty } = useMotivationForm();
   // 生成成功後、結果画面へ移り終えるまでの状態。
   // isPending は生成が解決した時点で false に戻るので、これが無いと
   // reset() 直後に下のガードが走ってステップ1へ飛ばされる
@@ -90,11 +88,7 @@ export default function MotivationNewStep() {
         title='志望動機作成'
         onBack={() => navigate(-1)}
         headerSlot={
-          <ProgressBar
-            current={currentStep}
-            total={motivationSteps.length}
-            theme={theme}
-          />
+          <ProgressBar current={currentStep} total={motivationSteps.length} />
         }
       >
         {create.error && (
@@ -122,10 +116,11 @@ export default function MotivationNewStep() {
         </AnimatePresence>
       </ToolLayout>
 
-      <GeneratingOverlay
-        isOpen={isSubmitting}
-        messages={GENERATING_MESSAGES}
-        theme={theme}
+      <GeneratingOverlay isOpen={isSubmitting} messages={GENERATING_MESSAGES} />
+
+      <LeaveConfirmDialog
+        when={isDirty && !isSubmitting}
+        keepWithin={paths.motivationsNew}
       />
     </>
   );

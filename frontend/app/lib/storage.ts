@@ -5,11 +5,15 @@
  */
 
 export const STORAGE_KEYS = {
+  /** 匿名ユーザーID。バックエンド接続時にヘッダで送る */
+  anonymousId: 'fun-mock-box:anonymous-id',
   selfPromotions: 'fun-mock-box:self-promotions',
   selfPromotionDraft: 'fun-mock-box:self-promotion:draft',
   motivations: 'fun-mock-box:motivations',
   motivationDraft: 'fun-mock-box:motivation:draft',
   entrySheets: 'fun-mock-box:entry-sheets',
+  entrySheetCreateDraft: 'fun-mock-box:entry-sheet-create:draft',
+  entrySheetReviewDraft: 'fun-mock-box:entry-sheet-review:draft',
 } as const;
 
 function safeParse<T>(raw: string | null, fallback: T): T {

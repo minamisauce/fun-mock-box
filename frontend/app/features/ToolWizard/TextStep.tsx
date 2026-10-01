@@ -1,21 +1,30 @@
+import type { ReactNode } from 'react';
 import { Button } from '~/components/Button';
 import { SuggestChips } from '~/components/SuggestChips';
 import { TextArea } from '~/components/TextArea';
-import type { ToolTheme } from '~/lib/toolTheme';
 
 type Props = {
   label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
-  candidates: readonly string[];
+  /** 記入候補。省略するとチップ列ごと出さない（ES本文のような長文ステップ用） */
+  candidates?: readonly string[];
   suggestMaxCount?: number;
   maxLength?: number;
+  /** textarea の初期行数。長文を入れるステップでは増やす */
+  minRows?: number;
   onNext: () => void;
   /** 最終ステップでは「次へ」ではなく生成ボタンにする */
   nextText?: string;
   isSubmitting?: boolean;
-  theme: ToolTheme;
+  /**
+   * 入力欄とボタンの間に差し込む要素。
+   * 最終ステップの同意チェックや、ES1問目の画像入力への導線が入る。
+   */
+  beforeAction?: ReactNode;
+  /** 入力が埋まっていても押させたくないとき（同意が未チェックなど） */
+  disabled?: boolean;
 };
 
 /**
@@ -30,10 +39,12 @@ export function TextStep({
   candidates,
   suggestMaxCount = 6,
   maxLength = 100,
+  minRows = 3,
   onNext,
   nextText = '次へ',
   isSubmitting = false,
-  theme,
+  beforeAction,
+  disabled = false,
 }: Props) {
   const isEmpty = value.trim().length === 0;
 
@@ -48,21 +59,24 @@ export function TextStep({
           placeholder={placeholder}
           maxLength={maxLength}
           showCount
-          minRows={3}
+          minRows={minRows}
         />
-        <SuggestChips
-          candidates={candidates}
-          maxCount={suggestMaxCount}
-          onPick={onChange}
-        />
+        {candidates && candidates.length > 0 && (
+          <SuggestChips
+            candidates={candidates}
+            maxCount={suggestMaxCount}
+            onPick={onChange}
+          />
+        )}
       </div>
+
+      {beforeAction}
 
       <Button
         text={nextText}
         onClick={onNext}
-        disabled={isEmpty}
+        disabled={isEmpty || disabled}
         isPending={isSubmitting}
-        theme={theme}
       />
     </div>
   );

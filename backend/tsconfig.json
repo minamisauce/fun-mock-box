@@ -2,10 +2,10 @@
   "extends": "../tsconfig.base.json",
   "include": ["src", "prisma", "*.config.ts"],
   "compilerOptions": {
-    "lib": ["ES2023"],
-    "types": ["node"],
-    "paths": {
-      "~/*": ["./src/*"]
-    }
+    // frontend と違い `~/*` エイリアスは使わず相対 import に統一する。
+    // tsx は baseUrl 無しに paths を解決できず、その baseUrl は TS7 で廃止予定のため。
+    // backend は階層が浅いので相対でも深くならない。
+    "lib": ["ES2022"],
+    "types": ["node"]
   }
 }

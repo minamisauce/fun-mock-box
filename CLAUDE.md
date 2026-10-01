@@ -2,59 +2,123 @@
 
 ## これは何
 
-就活BOXの「自己PR作成」「志望動機作成」「ES作成」ツールの **モック** リポジトリ。
-バックエンドは無く、`app/mocks/` の擬似APIと localStorage で動く。
+就活BOXの「自己PR作成」「志望動機作成」「ES作成」ツールの **プロトタイプ** リポジトリ。
 本番実装は `../shukatsu-box` を参照（型・ステップ定義・デザイントークンの出典）。
+
+pnpm workspace の3パッケージ構成。依存の向きは `api-schema → frontend / backend` で、
+frontend と backend は相互に依存しない。
+
+| パッケージ | 中身 |
+|---|---|
+| `frontend/` | React Router v8 の SPA（`ssr: false`） |
+| `backend/` | Hono + Prisma + SQLite の JSON API |
+| `api-schema/` | Zod スキーマ・型・決定論的な生成器。FE/BE が共有する |
+
+**バックエンドを起動しなくても動く**のが設計の中心要件。`VITE_API_URL` が無ければ
+localStorage だけで完結する（詳細は「データアクセス層」）。
 
 ## コマンド
 
 パッケージマネージャは **pnpm**。npm / yarn を使わない。
-Node は `.node-version`（24.15.0）に従う。React Router v8 は Node > 22.22.0 が必須。
+Node は `.node-version`（24.15.0）に従う。React Router v8 は Node > 22.22.0 が必須で、
+グローバルが古いと `pnpm dev` が起動時に弾かれるので `mise exec -- pnpm ...` で実行する。
 
 ```bash
-pnpm dev         # http://localhost:5173
-pnpm build
+pnpm install                    # postinstall で prisma generate まで走る
+pnpm -F @fun/backend db:migrate # 初回のみ。backend/prisma/dev.db が作られる
 
-# CI で検証している3つ（PR を出す前にこの3つを通す）
-pnpm format      # biome check（フォーマット + lint）
-pnpm typecheck   # react-router typegen && tsc
-pnpm test        # vitest run
+pnpm dev            # FE:5173 + BE:3334 を同時起動
+pnpm dev:frontend   # バックエンド無しで起動（オフラインモード）
 
-pnpm format:fix  # biome check --write（自動修正）
+# CI で検証しているもの（PR を出す前に通す）
+pnpm format         # biome check（ルート1本で3パッケージを見る）
+pnpm typecheck      # pnpm -r
+pnpm test           # pnpm -r
+pnpm build          # 環境変数あり/なしの2回ぶんを CI で回している
+
+pnpm format:fix
+pnpm -F @fun/backend db:studio
 ```
 
-CI は `.github/workflows/check.yml`。1つ落ちても残りを実行するので、
-PR 上で3つぶんの結果がまとめて見える。
+CI は `.github/workflows/check.yml`。1つ落ちても残りを実行する。
 
 ## ハマりどころ（必読）
 
-### 1. ルートはファイルを置いても認識されない
+### 1. データアクセスは `~/data` の `dataClient` 経由でのみ
 
-`remix-flat-routes` は未導入。**必ず `app/routes.ts` の配列に
-`index()` / `route()` / `layout()` / `prefix()` で登録する。**
-ファイル名の `$` や `+` には何の意味も無いので使わない。
+`frontend/app/data/` に契約（`contract.ts`）が1つあり、それを
+**localStorage 実装（`local/`）と HTTP 実装（`http/`）の両方**が満たす。
+routes / features は `~/data` の `dataClient` だけを import し、
+`~/data/local` や `~/data/http` を直接触らない。
 
-`/self-promotions/new` は `route(":id")` に食われるため、
-`route("new", ...)` の明示が必要（登録順ではなく具体性で解決されるが、
-そもそもルートが存在しないと `:id` にマッチする）。
+切り替えは `frontend/.env.local` の `VITE_API_URL` の**有無だけ**。
+無ければオフライン、あれば HTTP。ビルド時に畳まれるので使わない側は
+バンドルから落ちる。**「fetch に失敗したら黙って localStorage に落ちる」
+フォールバックは作らない**（どちらのモードで動いているか分からなくなるため）。
 
-### 2. パスエイリアスは `~/`（`@/` ではない）
+2実装がズレないよう `data/contract.test.ts` が同じテストを両方に流している。
+契約を増やすときは必ず両実装とこのテストを同時に直す。
+ローカル実装は意図的に貧弱に保つ（検索・ページネーション・入力検証を持たせない）。
 
-`~/*` → `./app/*`。shukatsu-box のコードを移植するときは `@/` を `~/` に置換する。
+**モード間でデータは移行しない。** オフラインで作ったものは接続モードでは見えない。
+
+### 2. パスエイリアスはパッケージごとに違う
+
+- `frontend`: `~/*` → `frontend/app/*`
+- `backend`: **エイリアス無し。相対 import に統一**（tsx が baseUrl 無しに
+  paths を解決できず、その baseUrl は TS7 で廃止予定のため）
+- パッケージ間は `@fun/api-schema` で参照する
 
 ### 3. 型は必ず `import type`
 
 `verbatimModuleSyntax: true`。値と型を同じ import 文に混ぜない。
-ルートモジュールの型は `import type { Route } from "./+types/<ファイル名>"`。
-`.react-router/types/` は自動生成なので直接編集しない。
+frontend が `@fun/api-schema` から Zod スキーマを**値**で import すると
+バンドルに zod が丸ごと入るので、型だけを取ること。
 
-### 4. Tailwind は v4（CSS-first）。`tailwind.config.ts` は存在しない
+### 4. api-schema はビルドしない
 
-トークンは `app/app.css` の `@theme` に CSS 変数で定義する。
+`exports` が `.ts` ソースを直接指している。frontend(Vite) / backend(tsx) / tsc の
+3方向がソースを読むので `dist` の同期ズレが起きない。
+就活BOX は `'zod/v4'` から import しているが、こちらは `'zod'`（移植時に直す1行）。
+
+### 5. React Router は SPA モード（`ssr: false`）を維持する
+
+バックエンドは**別プロセスの JSON API** であって React Router のサーバーではない。
+SSR にすると localStorage 実装がサーバー側で走って空を返し、全画面がチラつく。
+`loader` / `action` は書かない。データ取得は `useAsyncData` / `useAsyncAction` を使う。
+
+### 6. ルートはファイルを置いても認識されない
+
+`remix-flat-routes` は未導入。必ず `frontend/app/routes.ts` の配列に登録する。
+`/self-promotions/new` は `route(":id")` に食われるため `route("new", ...)` の明示が必要。
+
+backend も同じ罠がある。`/review` `/extract-text` のような固定パスは
+`/:id` より**先に**登録する。
+
+### 7. バックエンドの落とし穴
+
+- **ポートは 3334**。3333 は就活BOX の NestJS が使う（同時に起動できるようずらしてある）
+- **CORS の `allowHeaders` に `X-Anonymous-Id`** が無いとプリフライトで全 POST が落ちる。
+  症状が「原因不明の CORS エラー」になる。開発は Vite プロキシ経由なので顕在化しない
+- **Prisma 7**: driver adapter 必須／`prisma.config.ts` 必須／generator の `output` 必須。
+  `@prisma/client` ではなく `src/generated/prisma/client` から import する
+- **Prisma の行型は `<Model>Model`** という名前で api-schema の型と衝突する。
+  presenter では `as <Model>Row` で別名 import する
+- **`prisma migrate reset` は使わない**。AI エージェントには危険操作として同意が要求され
+  CI で通らない。テストは `test.db` を消して `migrate deploy` で作り直す
+- **SQLite の `PRAGMA foreign_keys` は既定 OFF**。`onDelete: Cascade` が黙って効かないので
+  起動時に `tunePragmas()` で WAL / busy_timeout / foreign_keys を明示する
+- **`@db.Text` は SQLite で使えない**。就活BOXのスキーマをコピーすると validate で落ちる
+- **vitest の `test.env` は globalSetup に効かない**。DATABASE_URL は
+  `src/test/global-setup.ts` 側でも明示している（忘れると dev.db を触る）
+
+### 8. Tailwind は v4（CSS-first）。`tailwind.config.ts` は存在しない
+
+トークンは `frontend/app/app.css` の `@theme` に CSS 変数で定義する。
 
 | 種別 | 名前空間 | 例 |
 |---|---|---|
-| 色 | `--color-*` | `bg-primary-self-promotion` |
+| 色 | `--color-*` | `bg-primary`, `text-danger` |
 | 余白 | `--spacing-*` | `p-md`, `gap-xs` |
 | 文字サイズ | `--text-*` | `text-sm` |
 | 行間 | `--leading-*` | `leading-md` |
@@ -62,71 +126,112 @@ PR 上で3つぶんの結果がまとめて見える。
 | 影 | `--shadow-*` | `shadow-all-sides` |
 | 幅 | `--container-*` | `w-tool`（375px） |
 
-- カスタムユーティリティは `@utility` ディレクティブで定義する。
-- **生の hex（`bg-[#5557e4]`）を書かない。** 必ずトークン名を使う。
-- **クラス名を動的生成しない。** `` `bg-primary-${toolId}` `` は Tailwind が
-  ソースをスキャンしても見つけられず CSS が生成されない。
-  ツール色は `app/lib/toolTheme.ts` に完全なクラス文字列で持ち、
-  `theme={TOOL_THEME["self-promotion"]}` の形でコンポーネントに渡す。
-- `--text-*` は対になる `--text-X--line-height` を持つ。値だけ上書きすると
-  デフォルトの行間が残るため、`--text-*: initial` でリセットしてからペアで定義する。
-- **ダークモードは使わない**（`dark:` を書かない）。就活BOXは light 固定のスマホUI。
+- **生の hex（`bg-[#5557e4]`）を書かない。** 必ずトークン名を使う
+- **クラス名を動的生成しない**（Tailwind が静的スキャンで拾えない）。
+  ツール色は下のとおり CSS 変数側で切り替わるので、組み立てる必要はない
+- **ダークモードは使わない**（`dark:` を書かない）
 
-### 5. SPA モード（`react-router.config.ts` の `ssr: false`）
+#### 色は3層。`primary` はただ1つしかない
 
-サーバーは無い。`loader` / `action` はサーバーで動かないので書かない。
-データ取得は `app/mocks/` の関数を `useEffect` / イベントハンドラから呼ぶ。
-localStorage / sessionStorage は `app/lib/storage.ts` のラッパ経由で触る。
+| 層 | トークン | 使いどころ |
+|---|---|---|
+| primitive | `--color-purple-50` / `--color-red-50` 等 | 色の実体。クラスとして直接書かない |
+| semantic | `brand` / `danger` | ツールに依存しない固定の役割 |
+| contextual | `primary` / `primary-soft` | 「今いる面の主役色」 |
 
-### 6. モックAPIは `app/mocks/selfPromotion.ts` 経由でのみ呼ぶ
+どれを使うかは「**この画面はツールの中か、外か**」の一問で決まる。
 
-`app/mocks/templates/` や `app/lib/storage.ts` を routes / features から
-直接 import しない。関数シグネチャは実APIと1:1に保ち、
-型のフィールド名は本番（`@box/api-schema`）に揃える（snake_case 含む）。
+| 場面 | 使うもの |
+|---|---|
+| ツールの中（ボタン・進行・選択状態） | `bg-primary` / `bg-primary-soft` |
+| どのツールでもない面（ホームのヘッダー・BottomNav） | `bg-brand` |
+| ツールに関係なく意味が固定のもの（エラー・必須マーク） | `text-danger` |
 
-### 7. ステップ定義とコンポーネントの循環参照に注意
+ツール色は `data-tool` が付いた要素の配下で `--color-primary` が差し替わる
+（実体は `app.css` の `[data-tool='...']`）。したがって
+**共通コンポーネントはツール色を props で受け取らない。** `bg-primary` と書くだけでよい。
+
+`data-tool` は `frontend/app/lib/toolScope.ts` の `toolScope()` で付ける（手書きしない）。
+置く場所は**各ツールの layout に1回だけ**。例外は2つ。
+
+- ホーム / 作成履歴: 1画面に複数ツールが並ぶので、カード・行の単位で開く
+- `routes/entry-sheet/result.tsx`: routes.ts 上 layout の**外**にあるため画面側で開く
+
+⚠ 付け忘れても既定の `brand` 色で描画されるだけでエラーにならない。新しいツール画面を
+足すときは layout でスコープを開いたか確認すること。
+
+### 9. ステップ定義とコンポーネントの循環参照に注意
 
 `constants/steps.ts` はステップコンポーネントを import する。
-コンポーネント側からステップ ID を参照したいときは
-`constants/stepIds.ts`（コンポーネントを import しない）を使う。
+コンポーネント側からステップ ID を参照したいときは `constants/stepIds.ts` を使う。
 
 ## ディレクトリ規約
 
 | 置き場所 | 何を置くか |
 |---|---|
-| `app/routes/` | ルートモジュールのみ。薄く保つ |
-| `app/components/<PascalCase>/index.tsx` | 3ツールで使い回す汎用UI |
-| `app/features/ToolWizard/` | **3ツール共通**のウィザード機構（型 + `useStepNavigation`）。ツール固有の型を持ち込まない |
-| `app/features/<PascalCase>/` | ツール固有の components / constants / hooks |
-| `app/mocks/` | 擬似API。差し替え境界 |
-| `app/types/` | ドメイン型（本番 api-schema 相当） |
-| `app/lib/` | cn / paths / storage / toolTheme |
+| `frontend/app/routes/` | ルートモジュールのみ。薄く保つ |
+| `frontend/app/components/<PascalCase>/index.tsx` | 3ツールで使い回す汎用UI |
+| `frontend/app/data/` | データアクセス層。差し替え境界 |
+| `frontend/app/hooks/` | `useAsyncData` / `useAsyncAction` |
+| `frontend/app/features/ToolWizard/` | **3ツール共通**のウィザード機構。ツール固有の型を持ち込まない |
+| `frontend/app/features/<PascalCase>/` | ツール固有の components / constants / hooks |
+| `frontend/app/types/` | `@fun/api-schema` の再エクスポート + FE 専用型 |
+| `backend/src/api/<domain>/` | `*.route.ts` / `*.presenter.ts` / `usecases/*.usecase.ts` |
+| `backend/src/shared/` | prisma / errors / validate / middleware |
+| `backend/prisma/schema/` | 1モデル1ファイル |
+| `api-schema/src/api/` | 1 feature 1ファイル |
+| `api-schema/src/generators/` | LLM の代わりの決定論的生成器 |
 
-**共通コンポーネントにツール名をハードコードしない。** 色は props で渡す。
-これを守っている限り、志望動機・ES は `features/` の追加だけで載る。
+**共通コンポーネントにツール名をハードコードしない。** 色も props で渡さない
+（`bg-primary` と書けば、居るツールの色になる。§8 を参照）。
+
+backend は 1 API = 1 usecase ファイル。就活BOX の `*.module.ts` / `validators/` /
+repository 層は持ち込まない（3ドメインの規模に対して過剰なため）。
+
+## 認証・ユーザー識別
+
+認証は無い。初回に `crypto.randomUUID()` で発行した匿名IDを localStorage に持ち、
+`X-Anonymous-Id` ヘッダで送る。サーバーは `/api/*` のミドルウェアで `users` を upsert する。
+
+**サーバー発行にしない**のは、オフラインモードでも端末IDが確定している必要があるため。
+全クエリに `user_id` を AND すること（`findUnique({ where: { id } })` を使わない）。
+各ドメインに「別ユーザーの id を渡すと 404」テストがある。
 
 ## コードスタイル / テスト
 
-Biome（`biome.jsonc`）に従う。shukatsu-box と同じ設定にしてあるので、
-両リポジトリ間でコードをそのまま行き来させられる。
+Biome（`biome.jsonc`）に従う。shukatsu-box と同じ設定。
 
 - **シングルクォート**（JSX も）、スペース2つ
 - import の自動整列、未使用 import はエラー
 - Tailwind クラスの並べ替え（`useSortedClasses`）は nursery のため一旦 off
 
-テストは Vitest（`vitest.config.ts`、jsdom 環境）。`app/**/*.test.ts` を拾う。
-現状カバーしているのは擬似APIの中核だけ:
+テストは Vitest。
 
-- `app/mocks/templates/*.test.ts` — 生成文の決定性・入力の反映・段落数・文字数上限
-- `app/mocks/store.test.ts` — localStorage ストアの CRUD と壊れたJSONの扱い
+| パッケージ | 環境 | 対象 |
+|---|---|---|
+| `api-schema` | node | 生成器の決定性・入力の反映・段落数・文字数上限 |
+| `frontend` | jsdom | 契約テスト（両実装）・localStorage ストア・`fetchJson`・フック2本 |
+| `backend` | node + 実SQLite | 所有権分離・Json 往復・検証エラー |
 
-UI のテストはまだ無い。追加するなら `@testing-library/react` を入れる。
+`@testing-library/react` は**フックのテスト専用**。
+ルート／コンポーネントのテストは書かない（MemoryRouter と framer-motion のモックが要り、
+まだ流動的なマークアップを検証することになるため）。
+
+React Query は入れていない。1画面1取得でキャッシュすべきものが無いため。
+**入れる判断のトリガー**: 他ルートのリスト無効化が要る / 削除・一括削除を入れる /
+ポーリングが要る、のいずれか。`useAsyncData` の返り値名は `useQuery` に揃えてある。
 
 ## アイコン
 
-`lucide-react` を使う。SVG を手書きしない。
-Design System のアイコンは 24px 指定なので `size={24}` を基本にする
-（チップやバッジなど小さい要素では 12〜14px）。
+`lucide-react` を使う。SVG を手書きしない。24px が基本（チップやバッジは 12〜14px）。
+
+## 今スコープ外のもの
+
+LLM 呼び出し（`api-schema/src/generators/` が差し替え境界）、画像の S3 アップロード、
+ES フォームの下書き保存、`inflow_source` の実送信、削除・一括削除、デプロイ。
+
+コンテナ化するときは `node:24-alpine` を使わないこと（`better-sqlite3` に musl の
+prebuilt が無く node-gyp ビルドになる）。`node:24-slim` なら prebuilt が落ちてくる。
 
 ## 参考実装の所在
 
@@ -134,3 +239,4 @@ Design System のアイコンは 24px 指定なので `size={24}` を基本に�
 - ステップ遷移: `../shukatsu-box/frontend/app/src/features/Motivation/hooks/useStepNavigation.ts`
 - デザイントークン: `../shukatsu-box/frontend/tailwind.config.ts`
 - API型: `../shukatsu-box/api-schema/src/api/self-promotion/self-promotion.ts`
+- エラー形とfetchラッパ: `../shukatsu-box/frontend/app/src/apis/box/`

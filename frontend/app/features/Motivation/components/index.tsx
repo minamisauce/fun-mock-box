@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { ConsentNotice } from '~/components/ConsentNotice';
 import {
   experience,
   type Industry,
@@ -10,15 +12,11 @@ import { useMotivationForm } from '~/features/Motivation/hooks/useMotivationForm
 import { SelectStep } from '~/features/ToolWizard/SelectStep';
 import { TextStep } from '~/features/ToolWizard/TextStep';
 import type { StepComponentProps } from '~/features/ToolWizard/types';
-import { TOOL_THEME } from '~/lib/toolTheme';
-
-const theme = TOOL_THEME.motivation;
 
 const toOptions = (values: readonly string[]) =>
   values.map((value) => ({ label: value, value }));
 
 const industryOptions = toOptions(industry);
-const reasonOptions = toOptions(reason);
 
 export function SelectIndustry({ label, handleNextStep }: StepComponentProps) {
   const { values, setValue } = useMotivationForm();
@@ -37,7 +35,6 @@ export function SelectIndustry({ label, handleNextStep }: StepComponentProps) {
       label={label}
       options={industryOptions}
       onSelect={handleSelect}
-      theme={theme}
     />
   );
 }
@@ -56,36 +53,36 @@ export function SelectSector({ label, handleNextStep }: StepComponentProps) {
       label={label}
       options={toOptions(sectors)}
       onSelect={handleSelect}
-      theme={theme}
     />
   );
 }
 
 export function SelectReason({ label, handleNextStep }: StepComponentProps) {
-  const { setValue } = useMotivationForm();
-
-  const handleSelect = (value: string) => {
-    setValue('reason', value);
-    handleNextStep();
-  };
+  const { values, setValue } = useMotivationForm();
 
   return (
-    <SelectStep
+    <TextStep
       label={label}
-      options={reasonOptions}
-      onSelect={handleSelect}
-      columns={1}
-      theme={theme}
+      value={values.reason ?? ''}
+      onChange={(next) => setValue('reason', next)}
+      placeholder='例）プロフェッショナルとして成長したい'
+      candidates={reason}
+      onNext={handleNextStep}
     />
   );
 }
 
+/**
+ * 最終ステップ。生成AIへの送信に同意するまで作成ボタンを押せない。
+ * Figma: 自己PRツール node 3578:22404（consent ブロック）
+ */
 export function SelectExperience({
   label,
   handleNextStep,
   isSubmitting,
 }: StepComponentProps) {
   const { values, setValue } = useMotivationForm();
+  const [agreed, setAgreed] = useState(false);
 
   return (
     <TextStep
@@ -98,7 +95,14 @@ export function SelectExperience({
       onNext={handleNextStep}
       nextText='志望動機を作成する'
       isSubmitting={isSubmitting}
-      theme={theme}
+      beforeAction={
+        <ConsentNotice
+          toolName='志望動機'
+          agreed={agreed}
+          onChange={setAgreed}
+        />
+      }
+      disabled={!agreed}
     />
   );
 }

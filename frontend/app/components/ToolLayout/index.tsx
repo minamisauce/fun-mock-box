@@ -1,5 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { BottomNav } from '~/components/BottomNav';
 import { cn } from '~/lib/cn';
 
 type Props = {
@@ -12,7 +13,12 @@ type Props = {
   className?: string;
 };
 
-/** 全ツール共通のスマホ幅フレーム */
+/**
+ * 全ツール共通のスマホ幅フレーム。
+ *
+ * BottomNav はここが持つ。離脱確認（LeaveConfirmDialog）は「入力があるか」を
+ * 知っている必要があり、ここからは分からないので各画面側に置いている。
+ */
 export function ToolLayout({
   title,
   onBack,
@@ -41,6 +47,7 @@ export function ToolLayout({
           {headerSlot && <div className='px-md pb-md'>{headerSlot}</div>}
         </header>
         <main className={cn('flex-1 px-md py-lg', className)}>{children}</main>
+        <BottomNav />
       </div>
     </div>
   );

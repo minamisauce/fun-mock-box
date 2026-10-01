@@ -1,0 +1,20 @@
+/// 自己PR。
+/// id はオフラインモードでもクライアントが採番できるよう UUID 文字列にしている
+/// （就活BOX は Int autoincrement）。
+model SelfPromotion {
+  id         String   @id @default(uuid(7))
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id String
+
+  // SQLite に @db.Text は無い。String がそのまま TEXT になる
+  title         String
+  content       String
+  inflow_source String?
+
+  // 一覧は必ず user_id で絞って新しい順に並べる
+  @@index([user_id, created_at])
+  @@map("self_promotions")
+}

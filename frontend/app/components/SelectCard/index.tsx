@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { cn } from '~/lib/cn';
-import { TOOL_THEME, type ToolTheme } from '~/lib/toolTheme';
 
 /**
  * Design System: Components / glayButton (node 3047:7006)
@@ -22,7 +21,6 @@ type Props = {
   value?: string;
   onSelect: (value: string) => void;
   columns?: 1 | 2;
-  theme?: ToolTheme;
   className?: string;
 };
 
@@ -31,7 +29,6 @@ export function SelectCard({
   value,
   onSelect,
   columns = 1,
-  theme = TOOL_THEME['self-promotion'],
   className,
 }: Props) {
   return (
@@ -51,9 +48,9 @@ export function SelectCard({
             onClick={() => onSelect(option.value)}
             aria-pressed={selected}
             className={cn(
-              'flex flex-col items-center justify-center gap-xs rounded-md border-b p-xxl text-center text-sm font-bold leading-md transition-colors',
+              'flex flex-col items-center justify-center gap-xs rounded-md border-b p-xl text-center text-sm font-bold leading-md transition-colors',
               selected
-                ? cn(theme.border, theme.text, theme.bgSoft)
+                ? 'border-primary bg-primary-soft text-primary'
                 : 'border-border-2 bg-gray-2 text-black hover:bg-gray-3',
             )}
           >

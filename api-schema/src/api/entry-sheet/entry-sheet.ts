@@ -46,6 +46,12 @@ const entrySheetBase = {
 const entrySheetCreateModel = z.object({
   ...entrySheetBase,
   type: z.literal('CREATE'),
+  /**
+   * 作成時に指定された文字数。未指定なら持たない。
+   * 生成のパラメータであると同時に、結果画面で「何文字以内で作ったか」を
+   * 示すためにも使うので、モデルに残す。添削には無い概念なので CREATE のみ。
+   */
+  character_limit: z.number().int().positive().optional(),
   ai_explanation_schema_version: z.literal('CREATE_V1'),
   ai_explanation_json: aiExplanationCreateV1,
 });

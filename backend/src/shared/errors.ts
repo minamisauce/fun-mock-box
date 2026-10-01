@@ -41,8 +41,5 @@ export function notFound(
 }
 
 export function internalServerErrorBody(): ErrorResponse {
-  return errorBody(
-    'internal_server_error',
-    '時間をおいて再度お試しください。',
-  );
+  return errorBody('internal_server_error', '時間をおいて再度お試しください。');
 }

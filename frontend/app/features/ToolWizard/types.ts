@@ -9,6 +9,14 @@ export type StepComponentProps = {
   label: string;
   /** 次のステップへ進む。最終ステップでは送信処理が差し込まれる */
   handleNextStep: () => void;
+  /**
+   * 最終ステップを待たずに送信する。
+   *
+   * ES の「画像から一括入力」のように、途中のステップで必要な値がすべて揃う
+   * 経路のためにある。フォームへ値を入れた直後に呼ぶと state がまだ更新前なので、
+   * 呼び出し側は setValue の次のレンダーまで待つこと（createSteps の例を参照）。
+   */
+  handleSubmit?: () => void;
   isSubmitting?: boolean;
 };
 
