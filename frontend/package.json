@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@fun/api-schema": "workspace:*",
+    "@mlc-ai/web-llm": "0.2.85",
     "@react-router/node": "^8.4.0",
     "@react-router/serve": "^8.4.0",
+    "@wllama/wllama": "3.8.1",
     "clsx": "^2.1.1",
     "framer-motion": "^13.4.0",
     "isbot": "^5.1.36",

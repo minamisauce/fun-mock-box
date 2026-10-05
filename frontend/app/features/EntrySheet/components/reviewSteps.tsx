@@ -25,6 +25,7 @@ export function InputQuestion({
   handleNextStep,
   handleSubmit,
   isSubmitting,
+  isSubmitDisabled,
 }: StepComponentProps) {
   const { values, setValue } = useEntrySheetReviewForm();
   const [isImageMode, setIsImageMode] = useState(false);
@@ -49,6 +50,7 @@ export function InputQuestion({
           contentPlaceholder={ENTRY_SHEETS_TEXT.originalContent.placeholder}
           confirmLabel='ESを添削する'
           isSubmitting={isSubmitting}
+          isSubmitDisabled={isSubmitDisabled}
           onConfirm={(imported) => {
             setValue('question', imported.question);
             setValue('company_name', imported.company_name);
@@ -111,6 +113,7 @@ export function InputContent({
   label,
   handleNextStep,
   isSubmitting,
+  isSubmitDisabled,
 }: StepComponentProps) {
   const { values, setValue } = useEntrySheetReviewForm();
   const [agreed, setAgreed] = useState(false);
@@ -129,7 +132,7 @@ export function InputContent({
       beforeAction={
         <ConsentNotice toolName='ES' agreed={agreed} onChange={setAgreed} />
       }
-      disabled={!agreed}
+      disabled={!agreed || isSubmitDisabled}
     />
   );
 }

@@ -5,8 +5,8 @@ import {
   SelectSector,
 } from '~/features/Motivation/components';
 import { StepIdEnum } from '~/features/Motivation/constants/stepIds';
+import type { MotivationFormValues } from '~/features/Motivation/hooks/useMotivationForm';
 import type { Steps } from '~/features/ToolWizard/types';
-import type { CreateMotivationRequest } from '~/types/motivation';
 
 /**
  * ステップ定義。
@@ -14,7 +14,7 @@ import type { CreateMotivationRequest } from '~/types/motivation';
  *
  * 自己PRと違い分岐ステップは無いので、すべてフラットな配列。
  */
-export const motivationSteps: Steps<CreateMotivationRequest> = [
+export const motivationSteps: Steps<MotivationFormValues> = [
   {
     id: StepIdEnum.INDUSTRY,
     component: SelectIndustry,

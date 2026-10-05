@@ -12,12 +12,14 @@ import {
   strength,
 } from '~/features/SelfPromotion/constants/inputText';
 import { StepIdEnum } from '~/features/SelfPromotion/constants/stepIds';
-import { useSelfPromotionForm } from '~/features/SelfPromotion/hooks/useSelfPromotionForm';
+import {
+  type SelfPromotionFormValues,
+  useSelfPromotionForm,
+} from '~/features/SelfPromotion/hooks/useSelfPromotionForm';
 import { SelectStep } from '~/features/ToolWizard/SelectStep';
 import { TextStep } from '~/features/ToolWizard/TextStep';
 import type { StepComponentProps } from '~/features/ToolWizard/types';
 import { paths } from '~/lib/paths';
-import type { CreateSelfPromotionRequest } from '~/types/selfPromotion';
 
 const OTHER_VALUE = '__other__';
 
@@ -73,7 +75,7 @@ export function SelectStrength({ label, handleNextStep }: StepComponentProps) {
 
 /** 自由入力ステップの薄いラッパ。どのフィールドを扱うかだけが違う */
 function createTextStep(
-  name: keyof CreateSelfPromotionRequest,
+  name: keyof SelfPromotionFormValues,
   placeholder: string,
   candidates: readonly string[],
   nextText?: string,
@@ -123,6 +125,7 @@ export function SelectSolution({
   label,
   handleNextStep,
   isSubmitting,
+  isSubmitDisabled,
 }: StepComponentProps) {
   const { values, setValue } = useSelfPromotionForm();
   const [agreed, setAgreed] = useState(false);
@@ -141,7 +144,7 @@ export function SelectSolution({
       beforeAction={
         <ConsentNotice toolName='自己PR' agreed={agreed} onChange={setAgreed} />
       }
-      disabled={!agreed}
+      disabled={!agreed || isSubmitDisabled}
     />
   );
 }

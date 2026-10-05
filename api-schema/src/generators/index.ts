@@ -4,8 +4,8 @@
  *
  * backend の暫定生成ロジックと、frontend のオフラインモードが同じ文面を
  * 返せるよう、両者が参照できる api-schema に置いている。
- * LLM を入れたら backend 側の参照を services へ移し、
- * ここはオフラインモード専用に縮退させる。
+ * 画面からの生成はブラウザ内LLM（frontend/app/features/LocalLlm）に移ったので、
+ * ここが使われるのはリクエストに generated が無いとき（テスト・API の直叩き）だけ。
  */
 export * from './entry-sheet';
 export * from './motivation';

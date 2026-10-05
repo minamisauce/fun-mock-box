@@ -14,6 +14,8 @@ export const STORAGE_KEYS = {
   entrySheets: 'fun-mock-box:entry-sheets',
   entrySheetCreateDraft: 'fun-mock-box:entry-sheet-create:draft',
   entrySheetReviewDraft: 'fun-mock-box:entry-sheet-review:draft',
+  /** ブラウザ内LLMで使うモデル。端末ごとの好み */
+  llmModel: 'fun-mock-box:llm-model',
 } as const;
 
 function safeParse<T>(raw: string | null, fallback: T): T {

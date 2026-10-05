@@ -1,25 +1,24 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ErrorNotice } from '~/components/ErrorNotice';
-import { GeneratingOverlay } from '~/components/GeneratingOverlay';
 import { LeaveConfirmDialog } from '~/components/LeaveConfirmDialog';
 import { ProgressBar } from '~/components/ProgressBar';
 import { ToolLayout } from '~/components/ToolLayout';
 import { dataClient } from '~/data';
 import { entrySheetReviewSteps } from '~/features/EntrySheet/constants/reviewSteps';
 import { useEntrySheetReviewForm } from '~/features/EntrySheet/hooks/useEntrySheetReviewForm';
+import { buildEntrySheetReviewTask } from '~/features/EntrySheet/prompts';
+import { LlmGenerationPanel } from '~/features/LocalLlm/components/LlmGenerationPanel';
+import { WebGpuUnsupportedNotice } from '~/features/LocalLlm/components/WebGpuUnsupportedNotice';
+import { useLocalLlm } from '~/features/LocalLlm/hooks/useLocalLlm';
+import { useWebGpuSupport } from '~/features/LocalLlm/hooks/useWebGpuSupport';
+import { toBodyPreview } from '~/features/LocalLlm/text';
 import { useStepNavigation } from '~/features/ToolWizard/useStepNavigation';
 import { useAsyncAction } from '~/hooks/useAsyncAction';
-import { GENERATING_MIN_DURATION_MS, withMinimumDuration } from '~/lib/delay';
 import { paths } from '~/lib/paths';
 import type { ReviewEntrySheetRequest } from '~/types/entrySheet';
 
-const GENERATING_MESSAGES = [
-  '文章を読み込んでいます…',
-  '改善点を洗い出しています…',
-  '添削案を作成しています…',
-] as const;
+type Generated = NonNullable<ReviewEntrySheetRequest['generated']>;
 
 export function meta() {
   return [{ title: 'ES添削 | fun-mock-box' }];
@@ -28,18 +27,16 @@ export function meta() {
 export default function EntrySheetReviewStep() {
   const navigate = useNavigate();
   const { values, toRequest, reset, isDirty } = useEntrySheetReviewForm();
-  // 添削成功後、結果画面へ移り終えるまでの状態。
-  // isPending は解決した時点で false に戻るので、これが無いと
-  // reset() 直後に下のガードが走ってステップ1へ飛ばされる
+  // 保存成功後、結果画面へ移り終えるまでの状態。
+  // これが無いと reset() 直後に下のガードが走ってステップ1へ飛ばされる
   const [isLeaving, setIsLeaving] = useState(false);
 
-  const review = useAsyncAction((request: ReviewEntrySheetRequest) =>
-    withMinimumDuration(
-      dataClient.entrySheets.review(request),
-      GENERATING_MIN_DURATION_MS,
-    ),
+  const webGpu = useWebGpuSupport();
+  const llm = useLocalLlm<Generated>();
+  const save = useAsyncAction((request: ReviewEntrySheetRequest) =>
+    dataClient.entrySheets.review(request),
   );
-  const isSubmitting = review.isPending || isLeaving;
+  const isSubmitting = llm.isActive || save.isPending || isLeaving;
 
   const { currentStep, currentStepObject, isLastStep, handleNextStep } =
     useStepNavigation(entrySheetReviewSteps, paths.entrySheetsReviewNew);
@@ -57,15 +54,24 @@ export default function EntrySheetReviewStep() {
     }
   }, [currentStepObject, values, navigate, isSubmitting]);
 
-  const handleSubmit = async () => {
+  // 入力が揃ったら、ステップの代わりに生成画面を出す（保存は案を選んでから）
+  const handleSubmit = () => {
+    if (webGpu !== 'supported') return;
     const request = toRequest();
     if (!request) {
       navigate(paths.entrySheetsReviewNew, { replace: true });
       return;
     }
+    save.clearError();
+    llm.start(buildEntrySheetReviewTask(request));
+  };
 
-    const created = await review.run(request);
-    // 失敗時は review.error に載っているので、ここでは何もしない
+  const handleSave = async (generated: Generated) => {
+    const request = toRequest();
+    if (!request) return;
+
+    const created = await save.run({ ...request, generated });
+    // 失敗時は save.error に載っているので、ここでは何もしない
     if (!created) return;
 
     setIsLeaving(true);
@@ -84,44 +90,52 @@ export default function EntrySheetReviewStep() {
     <>
       <ToolLayout
         title='ES添削'
-        onBack={() => navigate(-1)}
+        onBack={() => (llm.isActive ? llm.reset() : navigate(-1))}
         headerSlot={
           <ProgressBar
-            current={currentStep}
+            current={llm.isActive ? entrySheetReviewSteps.length : currentStep}
             total={entrySheetReviewSteps.length}
           />
         }
       >
-        {review.error && (
-          <ErrorNotice
-            message={review.error.userMessage}
-            className='mb-md'
-            onRetry={handleSubmit}
+        {llm.isActive ? (
+          <LlmGenerationPanel
+            llm={llm}
+            toPreview={toBodyPreview}
+            onSave={handleSave}
+            isSaving={save.isPending || isLeaving}
+            saveError={save.error?.userMessage}
+            onBack={llm.reset}
           />
+        ) : (
+          <>
+            {webGpu === 'unsupported' && (
+              <WebGpuUnsupportedNotice className='mb-md' />
+            )}
+            <AnimatePresence mode='wait'>
+              <motion.div
+                key={currentStepObject.id}
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.2 }}
+              >
+                <StepComponent
+                  label={currentStepObject.label}
+                  handleNextStep={isLastStep ? handleSubmit : handleNextStep}
+                  handleSubmit={handleSubmit}
+                  isSubmitDisabled={webGpu !== 'supported'}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </>
         )}
-
-        <AnimatePresence mode='wait'>
-          <motion.div
-            key={currentStepObject.id}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.2 }}
-          >
-            <StepComponent
-              label={currentStepObject.label}
-              handleNextStep={isLastStep ? handleSubmit : handleNextStep}
-              handleSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-            />
-          </motion.div>
-        </AnimatePresence>
       </ToolLayout>
 
-      <GeneratingOverlay isOpen={isSubmitting} messages={GENERATING_MESSAGES} />
-
+      {/* ステップ間（/entry-sheets/review/new 配下）の移動は素通し。
+          保存は values を持ったまま結果画面へ出るので save.isPending で除く */}
       <LeaveConfirmDialog
-        when={isDirty && !isSubmitting}
+        when={(isDirty || llm.isActive) && !save.isPending && !isLeaving}
         keepWithin={paths.entrySheetsReviewNew}
       />
     </>

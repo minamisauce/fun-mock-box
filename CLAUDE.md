@@ -17,6 +17,9 @@ frontend と backend は相互に依存しない。
 **バックエンドを起動しなくても動く**のが設計の中心要件。`VITE_API_URL` が無ければ
 localStorage だけで完結する（詳細は「データアクセス層」）。
 
+文章の生成は **ブラウザ内LLM（WebGPU 上の WebLLM / wllama）** で行う。どちらのモードでも生成は端末で、
+保存だけが localStorage / backend に分かれる（詳細は §10）。
+
 ## コマンド
 
 パッケージマネージャは **pnpm**。npm / yarn を使わない。
@@ -165,6 +168,34 @@ backend も同じ罠がある。`/review` `/extract-text` のような固定パ�
 `constants/steps.ts` はステップコンポーネントを import する。
 コンポーネント側からステップ ID を参照したいときは `constants/stepIds.ts` を使う。
 
+### 10. 生成はブラウザ内LLM（`features/LocalLlm/`）
+
+- 実行エンジンは2つ（`runtimes/`）。モデルごとに `constants.ts` の `runtime` で選ぶ
+  - `webllm`: `@mlc-ai/web-llm`（MLC 形式）を Web Worker で動かす。Qwen3.5 系
+  - `wllama`: `@wllama/wllama`（llama.cpp の WASM 版、GGUF）。WebLLM 用ビルドが無い LFM2.5 用。
+    パッケージの `main` が実在しないので `@wllama/wllama/esm/index.js` を直接 import する
+  - どちらも生成を始めるまで読み込まない。同時に読み込むモデルは1つで、エンジンをまたぐ切り替えでは
+    先に unload する（`engine.ts`）
+- モデルは `constants.ts` の `LLM_MODELS`。既定は LFM2.5 1.2B JP、画面で切り替えられ、選択は localStorage
+  - LFM2.5 1.2B JP は速く自己PRは安定するが、志望動機・ES では同じ句の繰り返しや見出しの挿入で
+    崩れやすい（2026-10 の実測）。安定を取るなら Qwen3.5 4B（生成10秒強・初回2.4GB）
+  - 記入済みの出力例をプロンプトに入れると、LFM は例を丸写しして繰り返す。入れない
+  - ES の解説の「書き方の例」は書き写されることがあるので、例と同じ文の項目はパース時に捨てている
+- **WebGPU が無ければ非対応と表示して止める。** テンプレート生成器には落とさない
+  （データ層と同じく、どちらで動いたか分からなくなるフォールバックは作らない）
+- 1回の生成 = `LlmTask`（プロンプト + 出力を保存形にする `finalize`）。ツールごとに
+  `features/<Tool>/prompt(s).ts` に置き、`LlmGenerationPanel` が5状態（読み込み・生成中・
+  再生成した案の比較・失敗・確定）を描く
+- 生成結果は create / review リクエストの optional な `generated` に載せて保存する。
+  `generated` が無いときだけ `api-schema/src/generators/` の決定論的生成器を使う（テストと API 直叩き用）
+- **Qwen3 系は `extra_body.enable_thinking: false` が必須。** 付けないと思考が混ざる
+- **JSON モード（`response_format`）は使わない。** 思考を止める指定と文法制約がぶつかり、
+  `<think>` だけ、または空白だけが延々と返る。構造化したいもの（ES の解説）は
+  「見出し: …」の行形式で書かせてパースする
+- サンプリングはモデルごと（`sampling`）。Qwen は 0.7 / top_p 0.8、LFM は 0.3（推奨の 0.1 だと再生成しても同じ文）
+- dev では `optimizeDeps.include` に web-llm と wllama を入れてある。外すと初回の生成で依存の最適化が走り、
+  ページごと再読み込みされる
+
 ## ディレクトリ規約
 
 | 置き場所 | 何を置くか |
@@ -180,7 +211,8 @@ backend も同じ罠がある。`/review` `/extract-text` のような固定パ�
 | `backend/src/shared/` | prisma / errors / validate / middleware |
 | `backend/prisma/schema/` | 1モデル1ファイル |
 | `api-schema/src/api/` | 1 feature 1ファイル |
-| `api-schema/src/generators/` | LLM の代わりの決定論的生成器 |
+| `api-schema/src/generators/` | 決定論的生成器（`generated` が無いときだけ使う） |
+| `frontend/app/features/LocalLlm/` | ブラウザ内LLM（エンジン・状態機械・生成画面）。ツール非依存 |
 
 **共通コンポーネントにツール名をハードコードしない。** 色も props で渡さない
 （`bg-primary` と書けば、居るツールの色になる。§8 を参照）。
@@ -227,7 +259,7 @@ React Query は入れていない。1画面1取得でキャッシュすべきも
 
 ## 今スコープ外のもの
 
-LLM 呼び出し（`api-schema/src/generators/` が差し替え境界）、画像の S3 アップロード、
+サーバー側の LLM 呼び出し（生成はブラウザ内LLMのみ）、画像の S3 アップロード・実 OCR、
 ES フォームの下書き保存、`inflow_source` の実送信、削除・一括削除、デプロイ。
 
 コンテナ化するときは `node:24-alpine` を使わないこと（`better-sqlite3` に musl の

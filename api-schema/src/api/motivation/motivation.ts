@@ -31,6 +31,16 @@ export const createMotivationRequest = z.strictObject({
   /** どんな経験から働きたいと思ったか 例: リーグ優勝に導いた経験 */
   experience: z.string().min(1),
   inflow_source: z.string().optional(),
+  /**
+   * ブラウザ内LLMで生成済みの本文。あればそのまま保存し、無ければ
+   * サーバー側の決定論的生成器で作る。生成は端末で行い保存だけ送る構成のため
+   */
+  generated: z
+    .strictObject({
+      title: motivationModel.shape.title,
+      content: motivationModel.shape.content,
+    })
+    .optional(),
 });
 export type CreateMotivationRequest = z.infer<typeof createMotivationRequest>;
 export type CreateMotivationResponse = MotivationModel;

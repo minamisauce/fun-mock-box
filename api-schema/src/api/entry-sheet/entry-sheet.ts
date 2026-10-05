@@ -86,6 +86,13 @@ export const createEntrySheetRequest = z.strictObject({
   character_limit: z.number().int().positive().optional(),
   episode: z.string().min(1),
   inflow_source: z.string().optional(),
+  /** ブラウザ内LLMで生成済みの本文と解説。自己PRの generated と同じ扱い */
+  generated: z
+    .strictObject({
+      content: z.string().min(1),
+      ai_explanation_json: aiExplanationCreateV1,
+    })
+    .optional(),
 });
 export type CreateEntrySheetRequest = z.infer<typeof createEntrySheetRequest>;
 export type CreateEntrySheetResponse = EntrySheetModel;
@@ -97,6 +104,13 @@ export const reviewEntrySheetRequest = z.strictObject({
   /** 添削前のエントリーシート内容 */
   original_content: z.string().min(1),
   inflow_source: z.string().optional(),
+  /** ブラウザ内LLMで生成済みの本文と解説。作成の generated と同じ扱い */
+  generated: z
+    .strictObject({
+      content: z.string().min(1),
+      ai_explanation_json: aiExplanationReviewV1,
+    })
+    .optional(),
 });
 export type ReviewEntrySheetRequest = z.infer<typeof reviewEntrySheetRequest>;
 export type ReviewEntrySheetResponse = EntrySheetModel;

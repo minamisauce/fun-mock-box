@@ -4,8 +4,8 @@ import {
   InputQuestion,
 } from '~/features/EntrySheet/components/reviewSteps';
 import { ReviewStepIdEnum } from '~/features/EntrySheet/constants/stepIds';
+import type { EntrySheetReviewFormValues } from '~/features/EntrySheet/hooks/useEntrySheetReviewForm';
 import type { Steps } from '~/features/ToolWizard/types';
-import type { ReviewEntrySheetRequest } from '~/types/entrySheet';
 
 /**
  * ES添削のステップ定義。
@@ -13,7 +13,7 @@ import type { ReviewEntrySheetRequest } from '~/types/entrySheet';
  * 入力する項目は1画面フォーム版と同じ（質問 / 企業名 / 添削したいES）。
  * 3ステップとも自由入力 + 記入候補なので、分岐ステップは持たない。
  */
-export const entrySheetReviewSteps: Steps<ReviewEntrySheetRequest> = [
+export const entrySheetReviewSteps: Steps<EntrySheetReviewFormValues> = [
   {
     id: ReviewStepIdEnum.QUESTION,
     component: InputQuestion,

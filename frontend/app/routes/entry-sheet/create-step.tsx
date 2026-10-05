@@ -1,25 +1,24 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ErrorNotice } from '~/components/ErrorNotice';
-import { GeneratingOverlay } from '~/components/GeneratingOverlay';
 import { LeaveConfirmDialog } from '~/components/LeaveConfirmDialog';
 import { ProgressBar } from '~/components/ProgressBar';
 import { ToolLayout } from '~/components/ToolLayout';
 import { dataClient } from '~/data';
 import { entrySheetCreateSteps } from '~/features/EntrySheet/constants/createSteps';
 import { useEntrySheetCreateForm } from '~/features/EntrySheet/hooks/useEntrySheetCreateForm';
+import { buildEntrySheetCreateTask } from '~/features/EntrySheet/prompts';
+import { LlmGenerationPanel } from '~/features/LocalLlm/components/LlmGenerationPanel';
+import { WebGpuUnsupportedNotice } from '~/features/LocalLlm/components/WebGpuUnsupportedNotice';
+import { useLocalLlm } from '~/features/LocalLlm/hooks/useLocalLlm';
+import { useWebGpuSupport } from '~/features/LocalLlm/hooks/useWebGpuSupport';
+import { toBodyPreview } from '~/features/LocalLlm/text';
 import { useStepNavigation } from '~/features/ToolWizard/useStepNavigation';
 import { useAsyncAction } from '~/hooks/useAsyncAction';
-import { GENERATING_MIN_DURATION_MS, withMinimumDuration } from '~/lib/delay';
 import { paths } from '~/lib/paths';
 import type { CreateEntrySheetRequest } from '~/types/entrySheet';
 
-const GENERATING_MESSAGES = [
-  '設問とエピソードを読み取っています…',
-  '構成を組み立てています…',
-  '文章を作成しています…',
-] as const;
+type Generated = NonNullable<CreateEntrySheetRequest['generated']>;
 
 export function meta() {
   return [{ title: 'ES作成 | fun-mock-box' }];
@@ -28,18 +27,16 @@ export function meta() {
 export default function EntrySheetCreateStep() {
   const navigate = useNavigate();
   const { values, toRequest, reset, isDirty } = useEntrySheetCreateForm();
-  // 生成成功後、結果画面へ移り終えるまでの状態。
-  // isPending は解決した時点で false に戻るので、これが無いと
-  // reset() 直後に下のガードが走ってステップ1へ飛ばされる
+  // 保存成功後、結果画面へ移り終えるまでの状態。
+  // これが無いと reset() 直後に下のガードが走ってステップ1へ飛ばされる
   const [isLeaving, setIsLeaving] = useState(false);
 
-  const create = useAsyncAction((request: CreateEntrySheetRequest) =>
-    withMinimumDuration(
-      dataClient.entrySheets.create(request),
-      GENERATING_MIN_DURATION_MS,
-    ),
+  const webGpu = useWebGpuSupport();
+  const llm = useLocalLlm<Generated>();
+  const save = useAsyncAction((request: CreateEntrySheetRequest) =>
+    dataClient.entrySheets.create(request),
   );
-  const isSubmitting = create.isPending || isLeaving;
+  const isSubmitting = llm.isActive || save.isPending || isLeaving;
 
   const { currentStep, currentStepObject, isLastStep, handleNextStep } =
     useStepNavigation(entrySheetCreateSteps, paths.entrySheetsNew);
@@ -57,24 +54,39 @@ export default function EntrySheetCreateStep() {
     }
   }, [currentStepObject, values, navigate, isSubmitting]);
 
-  const handleSubmit = async () => {
+  // character_limit は任意なので toRequest() には含まれない。
+  // 空文字は「指定しない」なので undefined のまま送る。
+  const buildRequest = (): CreateEntrySheetRequest | null => {
     const request = toRequest();
-    if (!request) {
-      navigate(paths.entrySheetsNew, { replace: true });
-      return;
-    }
-
-    // character_limit は任意なので toRequest() には含まれない。
-    // 空文字は「指定しない」なので undefined のまま送る。
-    const created = await create.run({
+    if (!request) return null;
+    return {
       question: request.question,
       company_name: request.company_name,
       episode: request.episode,
       character_limit: values.character_limit
         ? Number(values.character_limit)
         : undefined,
-    });
-    // 失敗時は create.error に載っているので、ここでは何もしない
+    };
+  };
+
+  // 入力が揃ったら、ステップの代わりに生成画面を出す（保存は案を選んでから）
+  const handleSubmit = () => {
+    if (webGpu !== 'supported') return;
+    const request = buildRequest();
+    if (!request) {
+      navigate(paths.entrySheetsNew, { replace: true });
+      return;
+    }
+    save.clearError();
+    llm.start(buildEntrySheetCreateTask(request));
+  };
+
+  const handleSave = async (generated: Generated) => {
+    const request = buildRequest();
+    if (!request) return;
+
+    const created = await save.run({ ...request, generated });
+    // 失敗時は save.error に載っているので、ここでは何もしない
     if (!created) return;
 
     setIsLeaving(true);
@@ -93,46 +105,52 @@ export default function EntrySheetCreateStep() {
     <>
       <ToolLayout
         title='ES作成'
-        onBack={() => navigate(-1)}
+        onBack={() => (llm.isActive ? llm.reset() : navigate(-1))}
         headerSlot={
           <ProgressBar
-            current={currentStep}
+            current={llm.isActive ? entrySheetCreateSteps.length : currentStep}
             total={entrySheetCreateSteps.length}
           />
         }
       >
-        {create.error && (
-          <ErrorNotice
-            message={create.error.userMessage}
-            className='mb-md'
-            onRetry={handleSubmit}
+        {llm.isActive ? (
+          <LlmGenerationPanel
+            llm={llm}
+            toPreview={toBodyPreview}
+            onSave={handleSave}
+            isSaving={save.isPending || isLeaving}
+            saveError={save.error?.userMessage}
+            onBack={llm.reset}
           />
+        ) : (
+          <>
+            {webGpu === 'unsupported' && (
+              <WebGpuUnsupportedNotice className='mb-md' />
+            )}
+            <AnimatePresence mode='wait'>
+              <motion.div
+                key={currentStepObject.id}
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.2 }}
+              >
+                <StepComponent
+                  label={currentStepObject.label}
+                  handleNextStep={isLastStep ? handleSubmit : handleNextStep}
+                  handleSubmit={handleSubmit}
+                  isSubmitDisabled={webGpu !== 'supported'}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </>
         )}
-
-        <AnimatePresence mode='wait'>
-          <motion.div
-            key={currentStepObject.id}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.2 }}
-          >
-            <StepComponent
-              label={currentStepObject.label}
-              handleNextStep={isLastStep ? handleSubmit : handleNextStep}
-              handleSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-            />
-          </motion.div>
-        </AnimatePresence>
       </ToolLayout>
 
-      <GeneratingOverlay isOpen={isSubmitting} messages={GENERATING_MESSAGES} />
-
       {/* ステップ間（/entry-sheets/new 配下）の移動は素通し。
-          送信は values を持ったまま結果画面へ出るので isSubmitting で除く */}
+          保存は values を持ったまま結果画面へ出るので save.isPending で除く */}
       <LeaveConfirmDialog
-        when={isDirty && !isSubmitting}
+        when={(isDirty || llm.isActive) && !save.isPending && !isLeaving}
         keepWithin={paths.entrySheetsNew}
       />
     </>

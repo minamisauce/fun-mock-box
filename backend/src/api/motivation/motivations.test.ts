@@ -33,6 +33,22 @@ describe('/api/motivations', () => {
     expect(await res.json()).toEqual(created);
   });
 
+  it('生成済みの本文（generated）があればそれを保存する', async () => {
+    const body = await requestJson<MotivationModel>(
+      '/api/motivations',
+      USER_A,
+      {
+        method: 'POST',
+        json: {
+          ...createRequest,
+          generated: { title: 'LLMのタイトル', content: 'LLMの本文' },
+        },
+      },
+    );
+    expect(body.title).toBe('LLMのタイトル');
+    expect(body.content).toBe('LLMの本文');
+  });
+
   it('別のユーザーからは取得できない（404）', async () => {
     const created = await create(USER_A);
     const res = await request(`/api/motivations/${created.id}`, USER_B);

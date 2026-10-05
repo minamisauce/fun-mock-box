@@ -48,6 +48,8 @@ type Props = {
   confirmLabel: string;
   /** 生成中。ボタンをスピナーにする */
   isSubmitting?: boolean;
+  /** 送信できない環境（WebGPU 非対応など） */
+  isSubmitDisabled?: boolean;
   onConfirm: (values: ImportedEntrySheetValues) => void;
   /** 画像をやめて手入力に戻る */
   onCancel: () => void;
@@ -73,6 +75,7 @@ export function ImageImportFlow({
   withCharacterLimit = false,
   confirmLabel,
   isSubmitting = false,
+  isSubmitDisabled = false,
   onConfirm,
   onCancel,
 }: Props) {
@@ -102,6 +105,7 @@ export function ImageImportFlow({
             withCharacterLimit={withCharacterLimit}
             confirmLabel={confirmLabel}
             isSubmitting={isSubmitting}
+            isSubmitDisabled={isSubmitDisabled}
             onConfirm={onConfirm}
             onReselect={image.removeImage}
           />
@@ -175,6 +179,7 @@ type ReviewProps = {
   withCharacterLimit: boolean;
   confirmLabel: string;
   isSubmitting: boolean;
+  isSubmitDisabled: boolean;
   onConfirm: (values: ImportedEntrySheetValues) => void;
   onReselect: () => void;
 };
@@ -193,6 +198,7 @@ function ExtractedReview({
   withCharacterLimit,
   confirmLabel,
   isSubmitting,
+  isSubmitDisabled,
   onConfirm,
   onReselect,
 }: ReviewProps) {
@@ -289,7 +295,7 @@ function ExtractedReview({
               content: content.trim(),
             })
           }
-          disabled={!canProceed || !agreed}
+          disabled={!canProceed || !agreed || isSubmitDisabled}
           isPending={isSubmitting}
         />
         <Button
