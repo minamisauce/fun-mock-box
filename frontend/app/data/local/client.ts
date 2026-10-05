@@ -18,7 +18,9 @@ import type { SelfPromotionModel } from '~/types/selfPromotion';
  * これは「偽のバックエンド」ではなく単一デバイスのストアである。
  * 検索・ページネーション・入力検証は持たせない（契約に無いものは実装しない）。
  *
- * 擬似遅延は入れない。生成中の演出は GeneratingOverlay 側の
+ * 生成器は `generated`（ブラウザ内LLMの生成結果）が無いときだけ使う。
+ *
+ * 擬似遅延は入れない。画像読み取り中の演出は GeneratingOverlay 側の
  * 最小表示時間として持つので、ここは HTTP 実装と同じく即座に解決する。
  */
 export function createLocalClient(): DataClient {
@@ -41,7 +43,9 @@ export function createLocalClient(): DataClient {
         return selfPromotions.get(id) ?? null;
       },
       async create(req) {
-        return selfPromotions.insert(generateSelfPromotion(req));
+        return selfPromotions.insert(
+          req.generated ?? generateSelfPromotion(req),
+        );
       },
       async update(id, patch) {
         return selfPromotions.update(id, patch);
@@ -56,7 +60,7 @@ export function createLocalClient(): DataClient {
         return motivations.get(id) ?? null;
       },
       async create(req) {
-        return motivations.insert(generateMotivation(req));
+        return motivations.insert(req.generated ?? generateMotivation(req));
       },
       async update(id, patch) {
         return motivations.update(id, patch);
@@ -71,7 +75,8 @@ export function createLocalClient(): DataClient {
         return entrySheets.get(id) ?? null;
       },
       async create(req) {
-        const { content, ai_explanation_json } = generateEntrySheetCreate(req);
+        const { content, ai_explanation_json } =
+          req.generated ?? generateEntrySheetCreate(req);
         return entrySheets.insert({
           type: 'CREATE',
           question: req.question,
@@ -83,7 +88,8 @@ export function createLocalClient(): DataClient {
         });
       },
       async review(req) {
-        const { content, ai_explanation_json } = generateEntrySheetReview(req);
+        const { content, ai_explanation_json } =
+          req.generated ?? generateEntrySheetReview(req);
         return entrySheets.insert({
           type: 'REVIEW',
           question: req.question,

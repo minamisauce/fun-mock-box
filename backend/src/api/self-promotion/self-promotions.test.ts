@@ -42,6 +42,33 @@ describe('/api/self-promotions', () => {
     expect(new Date(body.created_at).toISOString()).toBe(body.created_at);
   });
 
+  it('生成済みの本文（generated）があればそれを保存する', async () => {
+    const body = await requestJson<SelfPromotionModel>(
+      '/api/self-promotions',
+      USER_A,
+      {
+        method: 'POST',
+        json: {
+          ...createRequest,
+          generated: { title: 'LLMのタイトル', content: 'LLMの本文' },
+        },
+      },
+    );
+    expect(body.title).toBe('LLMのタイトル');
+    expect(body.content).toBe('LLMの本文');
+  });
+
+  it('generated のタイトルが40字を超えると 400', async () => {
+    const res = await request('/api/self-promotions', USER_A, {
+      method: 'POST',
+      json: {
+        ...createRequest,
+        generated: { title: 'あ'.repeat(41), content: '本文' },
+      },
+    });
+    expect(res.status).toBe(400);
+  });
+
   it('作成したものを取得できる', async () => {
     const created = await create();
     const res = await request(`/api/self-promotions/${created.id}`, USER_A);

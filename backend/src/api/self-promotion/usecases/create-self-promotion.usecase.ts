@@ -8,13 +8,14 @@ import { toSelfPromotionModel } from '../self-promotion.presenter';
 
 /**
  * 本番（就活BOX）が LLM を呼ぶ箇所。
- * いまは決定論的なテンプレート生成に差し替えてある。
+ * 画面からはブラウザ内LLMで生成済みの本文（generated）が届くので、それを保存する。
+ * generated が無いときだけ決定論的なテンプレート生成で作る。
  */
 export async function createSelfPromotion(
   userId: string,
   params: CreateSelfPromotionRequest,
 ): Promise<CreateSelfPromotionResponse> {
-  const { title, content } = generateSelfPromotion(params);
+  const { title, content } = params.generated ?? generateSelfPromotion(params);
 
   const row = await prisma.selfPromotion.create({
     data: {

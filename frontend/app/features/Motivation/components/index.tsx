@@ -80,6 +80,7 @@ export function SelectExperience({
   label,
   handleNextStep,
   isSubmitting,
+  isSubmitDisabled,
 }: StepComponentProps) {
   const { values, setValue } = useMotivationForm();
   const [agreed, setAgreed] = useState(false);
@@ -102,7 +103,7 @@ export function SelectExperience({
           onChange={setAgreed}
         />
       }
-      disabled={!agreed}
+      disabled={!agreed || isSubmitDisabled}
     />
   );
 }

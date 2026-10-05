@@ -41,6 +41,16 @@ export const createSelfPromotionRequest = z.strictObject({
   solution: z.string().min(1),
   /** 流入元 例: mypage */
   inflow_source: z.string().optional(),
+  /**
+   * ブラウザ内LLMで生成済みの本文。あればそのまま保存し、無ければ
+   * サーバー側の決定論的生成器で作る。生成は端末で行い保存だけ送る構成のため
+   */
+  generated: z
+    .strictObject({
+      title: selfPromotionModel.shape.title,
+      content: selfPromotionModel.shape.content,
+    })
+    .optional(),
 });
 export type CreateSelfPromotionRequest = z.infer<
   typeof createSelfPromotionRequest

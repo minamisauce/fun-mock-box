@@ -11,7 +11,9 @@ export async function reviewEntrySheet(
   userId: string,
   params: ReviewEntrySheetRequest,
 ): Promise<ReviewEntrySheetResponse> {
-  const { content, ai_explanation_json } = generateEntrySheetReview(params);
+  // ブラウザ内LLMの生成結果があればそれを保存する（自己PRと同じ）
+  const { content, ai_explanation_json } =
+    params.generated ?? generateEntrySheetReview(params);
 
   const row = await prisma.entrySheet.create({
     data: {

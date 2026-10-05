@@ -18,6 +18,8 @@ export type StepComponentProps = {
    */
   handleSubmit?: () => void;
   isSubmitting?: boolean;
+  /** 送信できない環境（WebGPU 非対応など）。送信ボタンを押せなくする */
+  isSubmitDisabled?: boolean;
 };
 
 export type Step<TForm> = {

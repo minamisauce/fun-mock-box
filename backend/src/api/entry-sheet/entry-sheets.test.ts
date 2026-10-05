@@ -57,6 +57,46 @@ describe('/api/entry-sheets', () => {
     expect(reviewed.original_content).toBe(reviewRequest.original_content);
   });
 
+  it('生成済みの本文と解説（generated）があればそれを保存する', async () => {
+    const created = await requestJson<EntrySheetModel>(
+      '/api/entry-sheets',
+      USER_A,
+      {
+        method: 'POST',
+        json: {
+          ...createRequest,
+          generated: {
+            content: 'LLMの本文',
+            ai_explanation_json: [{ title: '見出し', content: '解説' }],
+          },
+        },
+      },
+    );
+    const reviewed = await requestJson<EntrySheetModel>(
+      '/api/entry-sheets/review',
+      USER_A,
+      {
+        method: 'POST',
+        json: {
+          ...reviewRequest,
+          generated: {
+            content: 'LLMの添削後',
+            ai_explanation_json: [
+              { title: '見出し', before: '前', after: '後', comment: '理由' },
+            ],
+          },
+        },
+      },
+    );
+
+    expect(created.content).toBe('LLMの本文');
+    expect(created.ai_explanation_json).toEqual([
+      { title: '見出し', content: '解説' },
+    ]);
+    expect(reviewed.content).toBe('LLMの添削後');
+    expect(reviewed.ai_explanation_json).toHaveLength(1);
+  });
+
   it('作成と添削が同じ一覧に並ぶ', async () => {
     await create();
     await request('/api/entry-sheets/review', USER_A, {

@@ -137,6 +137,18 @@ describe.each(CLIENTS)('%s client', (_name, makeClient) => {
       expect(await client.selfPromotions.get(created.id)).toEqual(created);
     });
 
+    it('生成済みの本文（generated）を渡すとそのまま保存する', async () => {
+      const client = makeClient();
+      const created = await client.selfPromotions.create({
+        ...selfPromotionRequest,
+        generated: { title: 'LLMのタイトル', content: 'LLMの本文' },
+      });
+
+      expect(created.title).toBe('LLMのタイトル');
+      expect(created.content).toBe('LLMの本文');
+      expect(await client.selfPromotions.get(created.id)).toEqual(created);
+    });
+
     it('一覧は新しい順に返す', async () => {
       const client = makeClient();
       const older = await client.selfPromotions.create(selfPromotionRequest);
@@ -191,6 +203,17 @@ describe.each(CLIENTS)('%s client', (_name, makeClient) => {
       expect(await client.motivations.get(created.id)).toEqual(created);
     });
 
+    it('生成済みの本文（generated）を渡すとそのまま保存する', async () => {
+      const client = makeClient();
+      const created = await client.motivations.create({
+        ...motivationRequest,
+        generated: { title: 'LLMのタイトル', content: 'LLMの本文' },
+      });
+
+      expect(created.title).toBe('LLMのタイトル');
+      expect(created.content).toBe('LLMの本文');
+    });
+
     it('自己PRとは別の一覧になる', async () => {
       const client = makeClient();
       await client.motivations.create(motivationRequest);
@@ -222,6 +245,35 @@ describe.each(CLIENTS)('%s client', (_name, makeClient) => {
       expect(reviewed.type).toBe('REVIEW');
       expect(reviewed.ai_explanation_schema_version).toBe('REVIEW_V1');
       expect(reviewed.original_content).toBe('私の強みは課題解決力です。');
+    });
+
+    it('生成済みの本文と解説（generated）を渡すとそのまま保存する', async () => {
+      const client = makeClient();
+      const created = await client.entrySheets.create({
+        ...entrySheetRequest,
+        generated: {
+          content: 'LLMの本文',
+          ai_explanation_json: [{ title: '見出し', content: '解説' }],
+        },
+      });
+      const reviewed = await client.entrySheets.review({
+        question: '自己PRを教えてください',
+        company_name: 'サンプル商事株式会社',
+        original_content: '私の強みは課題解決力です。',
+        generated: {
+          content: 'LLMの添削後',
+          ai_explanation_json: [
+            { title: '見出し', before: '前', after: '後', comment: '理由' },
+          ],
+        },
+      });
+
+      expect(created.content).toBe('LLMの本文');
+      expect(created.ai_explanation_json).toEqual([
+        { title: '見出し', content: '解説' },
+      ]);
+      expect(reviewed.content).toBe('LLMの添削後');
+      expect(reviewed.ai_explanation_json).toHaveLength(1);
     });
 
     it('作成と添削は同じ一覧に並ぶ', async () => {
